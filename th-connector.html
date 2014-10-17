@@ -205,6 +205,9 @@
           
           self._updateFields();
 
+          // update fields when an element is added to the component (e.g. added to content)
+          this.onMutation(this, self._updateFields);
+
 
           //var slider = self.querySelector('th-slider');
           //var donut = self.querySelector('th-donut-chart');
