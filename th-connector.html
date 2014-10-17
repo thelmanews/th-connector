@@ -1,6 +1,12 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../core-selector/core-selector.html">
 
+<link rel="import" href="../juicy-tile-list/src/juicy-tile-list.html">
+
+
+
+
+
 
 <polymer-element name="th-connector" attributes="">
   <template>
@@ -61,7 +67,8 @@
 
       .connections ul {
         list-style: none;
-        width: 350px;
+        width: 400px;
+        padding: 0;
         margin: 0;
       }
       .connections .del {
@@ -85,13 +92,17 @@
         margin: 5px;
       }
       ::content  .selected-src-element {
-        border: 1px solid #66CCFF;
+        border: 3px solid #66CCFF;
+        margin: 0;
+
         box-sizing:border-box;
         -moz-box-sizing:border-box;
         -webkit-box-sizing:border-box;
       }
       ::content  .selected-target-element {
-        border: 1px solid #00FF99  ;
+        border: 3px solid #00FF99  ;
+        margin: 0;
+
         box-sizing:border-box;
         -moz-box-sizing:border-box;
         -webkit-box-sizing:border-box;
@@ -101,9 +112,11 @@
         min-width: 20px;
         min-height: 20px;
         border: 1px solid #DDD;
+        margin: 2px;
         display: inline-block;
         position: relative;
         /* border inside */
+        vertical-align: top;
       }
       
       
@@ -111,8 +124,14 @@
     </style>
     <div class="connectors">
     </div>
+<!--       <juicy-tile-list>
+ -->
 
-    <content></content>
+
+        <content></content>
+
+<!--       </juicy-tile-list>
+ -->    
     <div class="panel">
       <h3>Connection Panel</h3>
       <div class="from selector">
@@ -237,7 +256,7 @@
           });
 
           self.$.connect.addEventListener('click', function() {
-            self.connectElements(self._srcElementSelection, self._srcPropertySelection,
+            self.connectAttributes(self._srcElementSelection, self._srcPropertySelection,
                                  self._targetElementSelection, self._targetPropertySelection);
 
 
@@ -249,21 +268,21 @@
           /*
 
 
-          self.connectElements('th-csv','filteredData','#filtered','data');
+          self.connectAttributes('th-csv','filteredData','#filtered','data');
 
-          //self.connectElements('th-csv','data','#unfiltered','data');
+          //self.connectAttributes('th-csv','data','#unfiltered','data');
 
-          //self.connectElements('th-csv','chartDataOutput','th-n-bar-chart','chartData');
+          //self.connectAttributes('th-csv','chartDataOutput','th-n-bar-chart','chartData');
 
-          self.connectElements('#url','value','th-csv','url');
+          self.connectAttributes('#url','value','th-csv','url');
 
-          self.connectElements('#col_from','value','th-csv','filter_col_from');
-          self.connectElements('#col_to','value','th-csv','filter_col_to');
-          self.connectElements('#row_from','value','th-csv','filter_row_from');
-          self.connectElements('#row_to','value','th-csv','filter_row_to');
+          self.connectAttributes('#col_from','value','th-csv','filter_col_from');
+          self.connectAttributes('#col_to','value','th-csv','filter_col_to');
+          self.connectAttributes('#row_from','value','th-csv','filter_row_from');
+          self.connectAttributes('#row_to','value','th-csv','filter_row_to');
 
 
-          self.connectElements('th-csv','data','th-basic-function','dataIn');
+          self.connectAttributes('th-csv','data','th-basic-function','dataIn');
 
 
           */
@@ -308,7 +327,7 @@
           
         },
 
-        connectElements: function(source, sourceField, target, targetField) {
+        connectAttributes: function(source, sourceField, target, targetField) {
 
           var self = this;
 
