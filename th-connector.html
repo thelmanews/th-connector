@@ -13,6 +13,7 @@
     <style>
       :host{
         font-size: 12px;
+        font-family: open-sans, sans-serif;
 
       } 
       #chartData_anchor1 {
@@ -42,10 +43,13 @@
         background-color: rgba(255,255,255,0.2);
         padding: 5px;
         margin: 10px;
+        position: relative;
+        width: 900px;
+
       }
       .panel .selector {
         display: inline;
-        margin-right: 10px;
+        margin-right: 10px; 
 
       }
       .panel core-selector {
@@ -54,8 +58,8 @@
         vertical-align: top;
       }
       .panel .core-selected {
-        color: #BBB;
-        border-bottom: 1px solid #AAA;
+        background-color: #ccc;
+        border: 1px solid #888;
       }
       .panel label {
         display: inline-block;
@@ -67,18 +71,27 @@
 
       .connections ul {
         list-style: none;
-        width: 400px;
+        width: 80%;
         padding: 0;
         margin: 0;
       }
+      .connections ul li {
+        margin: 3px 0;
+      }
       .connections .del {
         float: right;
+        color: #2fa3af;
       }
 
       .panel #connect {
-        float: right;
-        margin: 10px;
+
         display: none;
+        position: absolute;
+        top: 0;
+        right: 0;
+        background-color: #2fa3af;
+        color: #EEE;
+        border: 1px solid #AAA;
 
       }
 
@@ -89,8 +102,14 @@
 
       .panel h3 {
         font-family: arial;
-        margin: 5px;
+        margin: 5px 0px;
+        font-weight: normal;
       }
+
+      label {
+        color: #2fa3af;
+      }
+
       ::content  .selected-src-element {
         border: 3px solid #66CCFF;
         margin: 0;
@@ -172,7 +191,7 @@
 <!--       </template>
  --> 
       <div class="connections">
-          <label>connections: <label>
+          <label>connections: </label>
           <ul>
           <template repeat="{{connection, index in _connections}}">
             <li class="connection">{{connection.sourceEl}}->{{connection.sourceProperty}} => 
@@ -348,10 +367,14 @@
           //to set the value when elements are connected
           targetEl[targetField] = srcEl[sourceField];  
 
+          console.log(source);
+          console.log(source.getAttribute("name"), source.tagName);
+          //console.log(source.getAttributes());
+
           self._connections.push({
-            sourceEl: source,
+            sourceEl: (typeof source === "string") ? source : source.tagName+(source.id ? '#'+source.id : ''),
             sourceProperty: sourceField,
-            targetEl: target,
+            targetEl: (typeof target === "string") ? target : target.tagName+(target.id ? '#'+target.id : ''),
             targetProperty: targetField,
             observer: observer
          });
