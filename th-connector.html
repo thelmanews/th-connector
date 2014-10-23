@@ -3,6 +3,10 @@
 
 <link rel="import" href="../juicy-tile-list/src/juicy-tile-list.html">
 
+<link rel="import" href="../core-collapse/core-collapse.html">
+<link rel="import" href="../core-icon-button/core-icon-button.html">
+
+
 
 
 
@@ -137,71 +141,81 @@
         /* border inside */
         vertical-align: top;
       }
+
+
+      .elTitle {
+        color: #2fa3af;
+        padding: 2px;
+      }
       
       
 
     </style>
     <div class="connectors">
     </div>
-<!--       <juicy-tile-list>
- -->
 
+     <span class="elTitle">th-connector</span>
 
-        <content></content>
+    <core-icon-button icon="perm-data-setting" on-click="{{showControls}}"></core-icon-button>
 
-<!--       </juicy-tile-list>
- -->    
-    <div class="panel">
-      <h3>Connection Panel</h3>
-      <div class="from selector">
-        <label for="src_component">From:</label>
-        <core-selector id="src_component">
-          <template repeat="{{el in elements}}">
-            <div class="item">{{el.tagName}}<template if="{{el.id}}">#{{el.id}}</template></div>
-          </template>
+    <core-collapse id="ctrl_collapse">
+  
+      <div class="panel">
+        <h3>Connection Panel</h3>
+        <div class="from selector">
+          <label for="src_component">From:</label>
+          <core-selector id="src_component">
+            <template repeat="{{el in elements}}">
+              <div class="item">{{el.tagName}}<template if="{{el.id}}">#{{el.id}}</template></div>
+            </template>
 
-        </core-selector>
-        <label for="src_attrs">Attributes:</label>
-        <core-selector id="src_attrs">
-          <template repeat="{{attr in _srcAttrs}}">
-            <div class="item">{{attr}}</div>
-          </template>
+          </core-selector>
+          <label for="src_attrs">Attributes:</label>
+          <core-selector id="src_attrs">
+            <template repeat="{{attr in _srcAttrs}}">
+              <div class="item">{{attr}}</div>
+            </template>
 
-        </core-selector>
+          </core-selector>
+        </div>
+        <div class="to selector">
+          <label for="target_component">To:</label>
+          <core-selector id="target_component">
+            <template repeat="{{el in elements}}">
+              <div class="item">{{el.tagName}}<template if="{{el.id}}">#{{el.id}}</template></div>
+            </template>
+
+          </core-selector>
+          <label for="target_attrs">Attributes:</label>
+          <core-selector id="target_attrs">
+            <template repeat="{{attr in _targetAttrs}}">
+              <div class="item">{{attr}}</div>
+            </template>
+
+          </core-selector>
+        </div>
+  <!--       <template if="{{_srcPropertySelection && _targetPropertySelection}}">
+   -->        
+            <input type="button" id="connect" value="connect" style="{{(_srcPropertySelection && _targetPropertySelection) ? 'display: block' : ''}}"></input>
+  <!--       </template>
+   --> 
+        <div class="connections">
+            <label>connections: </label>
+            <ul>
+            <template repeat="{{connection, index in _connections}}">
+              <li class="connection">{{connection.sourceEl}}->{{connection.sourceProperty}} => 
+                      {{connection.targetEl}}->{{connection.targetProperty}}
+                       <a href="javascript:void(0)" class="del" data-index="{{index}}" on-click={{_deleteConncetionHandler}}>delete</a></li>
+            </template>
+            </ul>
+        </div>
+
       </div>
-      <div class="to selector">
-        <label for="target_component">To:</label>
-        <core-selector id="target_component">
-          <template repeat="{{el in elements}}">
-            <div class="item">{{el.tagName}}<template if="{{el.id}}">#{{el.id}}</template></div>
-          </template>
+  </core-collapse>
 
-        </core-selector>
-        <label for="target_attrs">Attributes:</label>
-        <core-selector id="target_attrs">
-          <template repeat="{{attr in _targetAttrs}}">
-            <div class="item">{{attr}}</div>
-          </template>
 
-        </core-selector>
-      </div>
-<!--       <template if="{{_srcPropertySelection && _targetPropertySelection}}">
- -->        
-          <input type="button" id="connect" value="connect" style="{{(_srcPropertySelection && _targetPropertySelection) ? 'display: block' : ''}}"></input>
-<!--       </template>
- --> 
-      <div class="connections">
-          <label>connections: </label>
-          <ul>
-          <template repeat="{{connection, index in _connections}}">
-            <li class="connection">{{connection.sourceEl}}->{{connection.sourceProperty}} => 
-                    {{connection.targetEl}}->{{connection.targetProperty}}
-                     <a href="javascript:void(0)" class="del" data-index="{{index}}" on-click={{_deleteConncetionHandler}}>delete</a></li>
-          </template>
-          </ul>
-      </div>
+  <content></content>
 
-    </div>
 
   </template>
 
@@ -389,7 +403,13 @@
           observer.close();
           self._connections.splice(index, 1);
 
-        }
+        },
+
+        showControls: function(e) {
+          this.$.ctrl_collapse.toggle();
+        } 
+
+
       
       });
 
