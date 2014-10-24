@@ -335,6 +335,8 @@
           var self = this;
           var boringTags = ['div','ul','li','span','th-editor'];
 
+          self.elements = [];
+
           var components = self.querySelectorAll('*'); //self.children;
           [].forEach.call(components, function(el) {
               if(boringTags.indexOf(el.tagName.toLowerCase())<0) {
