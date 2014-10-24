@@ -240,7 +240,10 @@
           self._updateFields();
 
           // update fields when an element is added to the component (e.g. added to content)
-          this.onMutation(this, self._updateFields);
+          //this.onMutation(this, self._updateFields);
+          
+          this.watchMutation();
+
 
 
           //var slider = self.querySelector('th-slider');
@@ -408,7 +411,21 @@
 
         showControls: function(e) {
           this.$.ctrl_collapse.toggle();
-        } 
+        } ,
+
+        watchMutation: function() {
+            var change = function() {
+
+              this._updateFields();
+
+              this.onMutation(this, change);
+            }.bind(this);
+
+
+            this.onMutation(this, change);
+
+
+          }
 
 
       
