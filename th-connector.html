@@ -155,7 +155,7 @@
     <div class="connectors">
     </div>
 
-     <span class="elTitle">th-connector</span>
+    <span class="elTitle">th-connector</span>
 
     <core-icon-button icon="perm-data-setting" on-click="{{showControls}}"></core-icon-button>
 
@@ -214,8 +214,9 @@
       </div>
   </core-collapse>
 
-
-  <content></content>
+  <div id="container">
+    <content id="content"></content>
+  </div>
 
 
   </template>
@@ -243,6 +244,12 @@
           //this.onMutation(this, self._updateFields);
           
           this.watchMutation();
+          console.log(this.$.content);
+          this.$.content.addEventListener('drop', function(e) {
+            console.log('drop');
+            e.stopPropagation();
+            return false;
+          });
 
 
 
@@ -339,13 +346,21 @@
 
           var components = self.querySelectorAll('*'); //self.children;
           [].forEach.call(components, function(el) {
+              el.setAttribute('draggable',true);
+              el.addEventListener('dragstart',function(e) {
+                console.log('drag');
+                this.style.opacity= 0;
+              });
+              el.addEventListener('dragend',function(e) {
+                console.log('drag');
+                this.style.opacity= 1;
+              });
               if(boringTags.indexOf(el.tagName.toLowerCase())<0) {
 
 
                 self.elements.push(el);
               }
-              if(typeof el.getMetaData === 'function') {
-              }
+              
               
           });
 
@@ -358,7 +373,9 @@
           if(!el) {
             return;
           }
-          
+          var metadata = (typeof el.getMetaData === 'function') ? el.getMetaData : null; 
+
+                   
           var attrs = el.publish;
           var attrsObj = [];
           for(key in attrs) {
@@ -386,10 +403,6 @@
 
           //to set the value when elements are connected
           targetEl[targetField] = srcEl[sourceField];  
-
-          console.log(source);
-          console.log(source.getAttribute("name"), source.tagName);
-          //console.log(source.getAttributes());
 
           self._connections.push({
             sourceEl: (typeof source === "string") ? source : source.tagName+(source.id ? '#'+source.id : ''),
