@@ -5,7 +5,7 @@
 
 <link rel="import" href="../core-collapse/core-collapse.html">
 <link rel="import" href="../core-icon-button/core-icon-button.html">
-
+<link rel="import" href="../th-theme/th-theme.html">
 
 
 
@@ -13,6 +13,7 @@
 
 
 <polymer-element name="th-connector" attributes="">
+  <core-style ref="theme"></theme>
   <template>
     <style>
       :host{
@@ -132,10 +133,10 @@
         -webkit-box-sizing:border-box;
       }
       
-      ::content > *:not(ul) {
+      ::content > *:not(ul) { /* selects the elements */
         min-width: 20px;
         min-height: 20px;
-        border: 1px solid #DDD;
+        /*border: 1px solid #DDD;*/
         margin: 2px;
         display: inline-block;
         position: relative;
@@ -149,7 +150,68 @@
         padding: 2px;
       }
       
+      .wrapper {
+        border: 2px solid #ddd;
+        display: inline-block;
+        position: relative;
+        margin: 20px;
+        margin-left: 60px;
+
+      }
+
+      .connections {
+        width: 40px;
+        margin-left: -40px;
+        position: absolute;
+        top: 0;
+      }
+
+      .wrapper li {
+        list-style: none;
+        /*margin-left: -40px;*/
+        /*display: inline-block;*/
+        position: relative;
+        font-size: 9px;
+      }
+
       
+
+
+      .inputMarker {
+        /*margin-left: -40px;*/
+        width: 30px;
+        height: 30px;
+        border: 3px solid #ddd;
+        border-radius: 15px;
+        box-sizing: border-box;
+        /*margin-top: 0px;*/
+      }
+
+      .outputMarker {
+        /*margin-left: -40px;*/
+         width: 30px;
+        height: 30px;
+        border: 3px solid #ddd;
+        border-radius: 15px;
+        box-sizing: border-box;
+      }
+
+      .over {
+        border: 3px solid red;
+      }
+      .fill {
+        background-color: red;
+      }
+
+      .wrapper label{
+        position: absolute;
+        top: -20px;
+        left: 0;
+        padding: 0;
+        overflow: visible;
+      }
+
+
 
     </style>
     <div class="connectors">
@@ -206,7 +268,7 @@
             <template repeat="{{connection, index in _connections}}">
               <li class="connection">{{connection.sourceEl}}->{{connection.sourceProperty}} => 
                       {{connection.targetEl}}->{{connection.targetProperty}}
-                       <a href="javascript:void(0)" class="del" data-index="{{index}}" on-click={{_deleteConncetionHandler}}>delete</a></li>
+                       <a href="javascript:void(0)" class="del" data-index="{{index}}" on-click={{_deleteConnectionHandler}}>delete</a></li>
             </template>
             </ul>
         </div>
@@ -215,8 +277,30 @@
   </core-collapse>
 
   <div id="container">
-    <content id="content"></content>
+    <template repeat="{{el in elements}}">
+      <div class="wrapper {{el.tagName}}">
+        <label>{{el.tagName}}</label>
+        
+        <div class="connections">
+          <!-- Input -->
+          <template if="{{el.publish | checkForInputAttr}}">
+            <li class="{{el.tagName | lowerCase}} inputMarker" on-dragover="{{dragOver}}" on-dragleave="{{dragLeave}}" on-drop="{{dropped}}" dropzone="true"></li>
+            <li>Input</li>
+          </template>
+
+          <!-- Output -->
+          <template if="{{el.publish | checkForOutputAttr}}">
+            <li class="{{el.tagName | lowerCase}} outputMarker"  on-dragStart="{{dragStart}}" on-drag="{{drag}}" on-dragEnd="{{dragEnd}}" on-drop="{{dropped}}" draggable="true"></li>
+            <li>Output</li>
+          </template>
+        </div>
+
+        <content select="{{el.tagName | lowerCase}}"></content>
+
+      </div>
+    </template>
   </div>
+
 
 
   </template>
@@ -237,20 +321,28 @@
 
         domReady: function() {
           var self = this;
-          
+          // console.log("dom ready");
+          //           console.log("**");
+
+
           self._updateFields();
+
+
+
+          // for (var i=0; i<this.elements.length; i++){
+          //   // console.log(this.elements[i].tagName);
+          //   var element = this.elements[i];
+          //   var el = this.querySelector(this.elements[i].tagName);
+          //   console.log(element.publish);
+            
+          // }
 
           // update fields when an element is added to the component (e.g. added to content)
           //this.onMutation(this, self._updateFields);
           
           this.watchMutation();
-          console.log(this.$.content);
-          this.$.content.addEventListener('drop', function(e) {
-            console.log('drop');
-            e.stopPropagation();
-            return false;
-          });
-
+         
+         
 
 
           //var slider = self.querySelector('th-slider');
@@ -338,7 +430,7 @@
         },
 
         _updateFields: function() {
-
+console.log("update fields");
           var self = this;
           var boringTags = ['div','ul','li','span','th-editor'];
 
@@ -367,6 +459,8 @@
         },
 
         _displayFeilds: function(selector) {
+
+          console.log("display fields");
           var self = this;
           var elSelector = selector.selection.textContent;
           var el = self.querySelector(elSelector);
@@ -387,7 +481,7 @@
         },
 
         connectAttributes: function(source, sourceField, target, targetField) {
-
+          console.log("connect attributes");
           var self = this;
 
           // check if source/target are dom element or query selector string:
@@ -415,7 +509,8 @@
 
         },
 
-        _deleteConncetionHandler: function(e, detail, sender) {
+        _deleteConnectionHandler: function(e, detail, sender) {
+          console.log("delete connection handler");
           var self = this;
           var index = e.target.getAttribute('data-index');
           var observer = self._connections[index].observer;
@@ -425,10 +520,12 @@
         },
 
         showControls: function(e) {
+          console.log("show controls");
           this.$.ctrl_collapse.toggle();
         } ,
 
         watchMutation: function() {
+          console.log("watch mutation");
             var change = function() {
 
               this._updateFields();
@@ -440,7 +537,45 @@
             this.onMutation(this, change);
 
 
-          }
+          },
+        lowerCase: function(value){
+          return value.toLowerCase();
+        },
+        checkForInputAttr: function(value){
+
+          return Object.keys(value).indexOf("input") > -1 ? true : false;
+        },
+        checkForOutputAttr: function(value){
+          console.log(Object.keys(value));
+          return Object.keys(value).indexOf("output") > -1 ? true : false;
+        },
+        dragStart: function(e, detail, selection){
+          this.fromEl = selection;
+          // console.log(e);
+          // console.log(selection);
+        },
+        drag: function(e, detail, selection){
+          // console.log(e);
+        },
+        dragEnd: function(e, detail, selection){
+          // console.log(e);
+        },
+        dragOver: function(e, detail, selection){
+          
+
+          selection.classList.add("over");
+          event.preventDefault(); // allows drop event on this element
+
+        },
+        dragLeave: function(e, detail, selection){
+          selection.classList.remove("over");
+        },
+        dropped: function(e, detail, selection){
+          selection.classList.remove("over");
+          selection.classList.add("fill");
+          this.connectAttributes(this.fromEl.classList[0],'output',selection.classList[0],'input');
+          
+        }
 
 
       
