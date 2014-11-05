@@ -13,13 +13,22 @@
 
   <script src="../platform/platform.js"></script>
   <link rel="import" href="th-connector.html">
+  <link rel="import" href="../th-geocoder-firebase/th-geocoder-firebase.html">
+  <link rel="import" href="../th-csv/th-csv.html">
+  <link rel="import" href="../th-google-map/th-google-map.html">
 
 </head>
 <body unresolved>
 
   <p>An example of using <code>&lt;th-connector></code>:</p>
 
-  <th-connector animateOnInit="true"></th-connector>
+  <th-connector animateOnInit="true">
+  
+      <th-csv url="../th-csv/assets/berlin.csv"></th-csv>
+      <th-geocoder-firebase firebaseLocation="https://sweltering-fire-3844.firebaseio.com/" style="width: 150px"></th-geocoder-firebase>
+      <th-google-map fitToMarkers width="600" height="400"></th-google-map>
+
+  </th-connector>
 
 </body>
 </html>
