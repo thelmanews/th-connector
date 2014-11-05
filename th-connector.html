@@ -12,7 +12,7 @@
 
 
 
-<polymer-element name="th-connector" attributes="">
+<polymer-element name="th-connector" extend="d3-chart" attributes="">
   <core-style ref="theme"></theme>
   <template>
     <style>
@@ -156,14 +156,14 @@
         position: relative;
         margin: 20px;
         margin-left: 60px;
-
       }
 
-      .connections {
+      .connections-tab {
         width: 40px;
         margin-left: -40px;
         position: absolute;
         top: 0;
+
       }
 
       .wrapper li {
@@ -196,19 +196,13 @@
         box-sizing: border-box;
       }
 
-      .over {
-        border: 3px solid red;
-      }
-      .fill {
-        background-color: red;
-      }
-
       .wrapper label{
         position: absolute;
         top: -20px;
         left: 0;
         padding: 0;
         overflow: visible;
+
       }
 
 
@@ -276,12 +270,12 @@
       </div>
   </core-collapse>
 
-  <div id="container">
-    <template repeat="{{el in elements}}">
-      <div class="wrapper {{el.tagName}}">
+  <div id="container" >
+    <template repeat="{{el, index in elements}}">
+      <div class="wrapper {{el.tagName}}" on-th-output-changed="{{displayOutputAvailable}}">
         <label>{{el.tagName}}</label>
         
-        <div class="connections">
+        <div id="connections" class="connections-tab" >
           <!-- Input -->
           <template if="{{el.publish | checkForInputAttr}}">
             <li class="{{el.tagName | lowerCase}} inputMarker" on-dragover="{{dragOver}}" on-dragleave="{{dragLeave}}" on-drop="{{dropped}}" dropzone="true"></li>
@@ -290,12 +284,12 @@
 
           <!-- Output -->
           <template if="{{el.publish | checkForOutputAttr}}">
-            <li class="{{el.tagName | lowerCase}} outputMarker"  on-dragStart="{{dragStart}}" on-drag="{{drag}}" on-dragEnd="{{dragEnd}}" on-drop="{{dropped}}" draggable="true"></li>
+            <li id="{{index}}"  class="{{el.tagName | lowerCase}} outputMarker" on-dragStart="{{dragStart}}" on-drag="{{drag}}" on-dragEnd="{{dragEnd}}" on-drop="{{dropped}}" draggable="true"></li>
             <li>Output</li>
           </template>
         </div>
-
         <content select="{{el.tagName | lowerCase}}"></content>
+        
 
       </div>
     </template>
@@ -321,32 +315,14 @@
 
         domReady: function() {
           var self = this;
-          // console.log("dom ready");
-          //           console.log("**");
 
-
+          self.colors = self.getThemeColors();
           self._updateFields();
-
-
-
-          // for (var i=0; i<this.elements.length; i++){
-          //   // console.log(this.elements[i].tagName);
-          //   var element = this.elements[i];
-          //   var el = this.querySelector(this.elements[i].tagName);
-          //   console.log(element.publish);
-            
-          // }
 
           // update fields when an element is added to the component (e.g. added to content)
           //this.onMutation(this, self._updateFields);
           
           this.watchMutation();
-         
-         
-
-
-          //var slider = self.querySelector('th-slider');
-          //var donut = self.querySelector('th-donut-chart');
 
           self.$.src_component.addEventListener('core-select', function() {
             if(!this.selection) {
@@ -358,7 +334,7 @@
             }
             self.querySelector(this.selection.textContent).classList.add('selected-src-element');
             self._srcElementSelection = this.selection.textContent;
-            self._srcAttrs = self._displayFeilds(this);
+            self._srcAttrs = self._displayFields(this);
             self._srcPropertySelection = null;
 
           });
@@ -382,7 +358,7 @@
               prev.classList.remove('selected-target-element');
             }
             self.querySelector(this.selection.textContent).classList.add('selected-target-element');
-            self._targetAttrs = self._displayFeilds(this);
+            self._targetAttrs = self._displayFields(this);
             self._targetPropertySelection = null;
 
           });
@@ -400,7 +376,6 @@
 
 
           });
-
 
 
           
@@ -430,7 +405,6 @@
         },
 
         _updateFields: function() {
-console.log("update fields");
           var self = this;
           var boringTags = ['div','ul','li','span','th-editor'];
 
@@ -458,7 +432,7 @@ console.log("update fields");
 
         },
 
-        _displayFeilds: function(selector) {
+        _displayFields: function(selector) {
 
           console.log("display fields");
           var self = this;
@@ -546,13 +520,13 @@ console.log("update fields");
           return Object.keys(value).indexOf("input") > -1 ? true : false;
         },
         checkForOutputAttr: function(value){
-          console.log(Object.keys(value));
+          // console.log(Object.keys(value));
           return Object.keys(value).indexOf("output") > -1 ? true : false;
         },
         dragStart: function(e, detail, selection){
           this.fromEl = selection;
-          // console.log(e);
-          // console.log(selection);
+          
+          selection.style.border = "3px solid "+this.colors.accents[selection.id];
         },
         drag: function(e, detail, selection){
           // console.log(e);
@@ -561,24 +535,69 @@ console.log("update fields");
           // console.log(e);
         },
         dragOver: function(e, detail, selection){
-          
-
-          selection.classList.add("over");
+          selection.style.border = "3px solid "+this.colors.accents[this.fromEl.id];
           event.preventDefault(); // allows drop event on this element
 
         },
         dragLeave: function(e, detail, selection){
-          selection.classList.remove("over");
+          selection.style.border = "3px solid #ddd";
         },
         dropped: function(e, detail, selection){
-          selection.classList.remove("over");
-          selection.classList.add("fill");
+          selection.style.border = "3px solid "+this.colors.accents[this.fromEl.id];
+          selection.style.backgroundColor = this.colors.accents[this.fromEl.id];
           this.connectAttributes(this.fromEl.classList[0],'output',selection.classList[0],'input');
           
+        },
+        getThemeColors: function(){
+          var colors = {};
+          colors.theme = window.CoreStyle.g.theme;
+          colors.accents = [];
+
+          for (var color in colors.theme){
+            if(/^accent/.test(color)){
+              colors.accents.push(colors.theme[color]);
+            }
+          }
+          var newAccents = colors.accents.map(function(color){
+        
+            var color = color,
+                lum = 0.3, // represents % lighter or darker (negative values are darker)
+                hex = "#", c, i;
+            
+            // validate color and make it always 6 chars 
+            color = String(color).replace(/[^0-9a-f]/gi, '');
+            if (color.length < 6) {
+              color = color[0]+color[0]+color[1]+color[1]+color[2]+color[2];
+            }
+
+            // convert color to decimal, adjust lumosity, and convert back to hex;
+            for (i = 0; i < 3; i++) {
+              c = parseInt(color.substr(i*2,2), 16);
+              c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
+              hex += ("00"+c).substr(c.length);
+            }
+
+            return hex;
+            
+          });
+
+          colors.accents = colors.accents.concat(newAccents);
+          
+          return colors;
+        },
+        displayOutputAvailable: function(e){
+          var el  = e.detail.tagName.toLowerCase();
+          var output = e.detail.output;
+          var outputMarker = this.$.container.querySelector('li.'+el+ '.outputMarker');
+          if (output){
+            
+            var outputId = outputMarker.id;
+            outputMarker.style.border="3px solid "+this.colors.accents[outputId];
+          } else {
+            outputMarker.style.border="3px solid #ddd";
+          }
+
         }
-
-
-      
       });
 
   </script>
