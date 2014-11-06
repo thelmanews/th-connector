@@ -269,36 +269,31 @@
       </div>
   </core-collapse>
 
-  <div id="container" on-dragover="{{allowDrop}}" on-drop="{{_removeConnection}}">
-    <template repeat="{{el, index in elements}}">
-      <div class="wrapper {{el.name}}" on-th-output-changed="{{displayOutputAvailable}}">
-        <label>{{el.name}}</label>
-        
-        <div id="connections" class="connections-tab" >
-          <!-- Input -->
-          <template if="{{el.element.publish | checkForInputAttr}}">
-            <li class="{{el.name}} inputMarker" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{dropped}}" dropzone="true" style="background-color: {{el.inputConnectedTo ? el.inputConnectedTo.color : 'none'}}; border-color:{{el.inputConnectedTo ? el.inputConnectedTo.color : '#ddd'}};" draggable="true"></li>
-            <li>Input</li>
-          </template>
+    <div id="container" on-dragover="{{allowDrop}}" on-drop="{{_removeConnection}}">
+      <template repeat="{{el, index in elements}}">
+        <div class="wrapper {{el.name}}" on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}">
+          <label>{{el.name}}</label>
+          
+          <div id="connections" class="connections-tab" >
+            <!-- Input -->
+            <template if="{{el.element.publish | checkForInputAttr}}">
+              <li class="{{el.name}} inputMarker" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{dropped}}" dropzone="true" style="background-color: {{el.inputConnectedTo ? el.inputConnectedTo.color : el.inputReady ? '#ddd' : 'none'}}; border-color:{{el.inputConnectedTo ? el.inputConnectedTo.color : '#ddd'}};" draggable="true"></li>
+              <li>Input</li>
+            </template>
 
-          <!-- Output -->
-          <template if="{{el.element.publish | checkForOutputAttr}}">
-            <li id="{{index}}"  class="{{el.name}} outputMarker" on-dragStart="{{dragStart}}" on-drag="{{drag}}" on-dragEnd="{{dragEnd}}" on-drop="{{dropped}}" draggable="true"></li>
-            <li>Output</li>
-          </template>
+            <!-- Output -->
+            <template if="{{el.element.publish | checkForOutputAttr}}">
+              <li id="{{index}}"  class="{{el.name}} outputMarker" on-dragStart="{{dragStart}}" on-drag="{{drag}}" on-dragEnd="{{dragEnd}}" on-drop="{{dropped}}" draggable="true" style="border-color: {{el.outputReady ? el.color : '#ddd'}}"></li>
+              <li>Output</li>
+            </template>
+          </div>
+          <content select="{{el.name}}"></content>
+          
+
         </div>
-        <content select="{{el.name}}"></content>
-        
-
-      </div>
-    </template>
-  </div>
-
-
-
+      </template>
+    </div>
   </template>
-
-
 
   <script>
 
@@ -345,8 +340,6 @@
 
           });
 
-
-
           self.$.target_component.addEventListener('core-select', function() {
             if(!this.selection) {
               return;
@@ -377,30 +370,6 @@
           });
 
 
-          
-          /*
-
-
-          self.connectAttributes('th-csv','filteredData','#filtered','data');
-
-          //self.connectAttributes('th-csv','data','#unfiltered','data');
-
-          //self.connectAttributes('th-csv','chartDataOutput','th-n-bar-chart','chartData');
-
-          self.connectAttributes('#url','value','th-csv','url');
-
-          self.connectAttributes('#col_from','value','th-csv','filter_col_from');
-          self.connectAttributes('#col_to','value','th-csv','filter_col_to');
-          self.connectAttributes('#row_from','value','th-csv','filter_row_from');
-          self.connectAttributes('#row_to','value','th-csv','filter_row_to');
-
-
-          self.connectAttributes('th-csv','data','th-basic-function','dataIn');
-
-
-          */
-
-
         },
 
         _updateFields: function() {
@@ -413,11 +382,9 @@
           [].forEach.call(components, function(el) {
               el.setAttribute('draggable',true);
               el.addEventListener('dragstart',function(e) {
-                console.log('drag');
                 this.style.opacity= 0;
               });
               el.addEventListener('dragend',function(e) {
-                console.log('drag');
                 this.style.opacity= 1;
               });
               var index=boringTags.indexOf(el.tagName.toLowerCase());
@@ -425,7 +392,8 @@
                 // self.elements.push(el);
                 self.elements.push({  element: el, 
                                       name: el.tagName.toLowerCase(), 
-                                      outputReady: false
+                                      outputReady: false,
+                                      inputReady: false
                                   });
               }
           
@@ -435,14 +403,10 @@
             self.elements[i].color = self.colors.accents[i];
 
           }
-          console.log("$$$$");
-          console.log(self.elements);
 
         },
 
         _displayFields: function(selector) {
-
-          console.log("display fields");
           var self = this;
           var elSelector = selector.selection.textContent;
           var el = self.querySelector(elSelector);
@@ -469,46 +433,50 @@
           // check if source/target are dom element or query selector string:
           var source = (typeof source === "string") ? self.querySelector(source) : source;
           var target = (typeof target === "string") ? self.querySelector(target): target;
- 
-          // select the source and target el in the elements array
-          var sourceEl = self.elements.filter(function(el){
-            return el.element == source;
-          })[0];
 
-          var targetEl = self.elements.filter(function(el){
-            return el.element == target;
-          })[0];
+          if (source === target){
+            alert('You cannot make a connection within the same element');
+          } else {
+            // select the source and target el in the elements array
+            var sourceEl = self.elements.filter(function(el){
+              return el.element == source;
+            })[0];
 
-          targetEl.inputConnectedTo = sourceEl;
-          console.log(targetEl);
-          // target.setAttribute.draggable = true;
+            var targetEl = self.elements.filter(function(el){
+              return el.element == target;
+            })[0];
 
-          // for (var i=0; i<self.elements.length; i++){
-          //   if(self.elements[i].element == target){
-          //     self.elements[i].inputConnectedTo = sourceEl;
-          //   }  
-          // }
+            targetEl.inputConnectedTo = sourceEl;
+            // target.setAttribute.draggable = true;
 
-          var observer = new PathObserver(sourceEl.element, sourceField);
-   
-               observer.open(function(newValue, oldValue) {
-               targetEl[targetField] = newValue;
-               
-          });
+            // for (var i=0; i<self.elements.length; i++){
+            //   if(self.elements[i].element == target){
+            //     self.elements[i].inputConnectedTo = sourceEl;
+            //   }  
+            // }
 
-          //to set the value when elements are connected
-          targetEl.element[targetField] = sourceEl.element[sourceField];  
+            var observer = new PathObserver(sourceEl.element, sourceField);
+     
+                 observer.open(function(newValue, oldValue) {
+                 targetEl[targetField] = newValue;
+                 
+            });
 
-          self._connections.push({
-            // sourceEl: (typeof source === "string") ? source : source.tagName+(source.id ? '#'+source.id : ''),
-            sourceEl: sourceEl.name + (sourceEl.element.id ? sourceEl.element.id : ''),
-            sourceProperty: sourceField,
-            targetEl: targetEl.name + (targetEl.element.id ? targetEl.element.id : ''),
-            // targetEl: (typeof target === "string") ? target : target.tagName+(target.id ? '#'+target.id : ''),
-            targetProperty: targetField,
-            observer: observer
-         });
+            //to set the value when elements are connected
+            targetEl.element[targetField] = sourceEl.element[sourceField];  
 
+            self._connections.push({
+              // sourceEl: (typeof source === "string") ? source : source.tagName+(source.id ? '#'+source.id : ''),
+              sourceEl: sourceEl.name + (sourceEl.element.id ? sourceEl.element.id : ''),
+              sourceProperty: sourceField,
+              targetEl: targetEl.name + (targetEl.element.id ? targetEl.element.id : ''),
+              // targetEl: (typeof target === "string") ? target : target.tagName+(target.id ? '#'+target.id : ''),
+              targetProperty: targetField,
+              observer: observer
+           });
+          }
+
+          console.log(self.elements);
 
         },
 
@@ -518,7 +486,7 @@
           var index = e.target.getAttribute('data-index');
           var observer = self._connections[index].observer;
           observer.close();
-          self._connections.splice(index, 1);
+          self._connections.splicge(index, 1);
 
         },
         _removeConnection: function(e, detail, selection){
@@ -529,14 +497,14 @@
             return el.name == self.fromEl.classList[0];
           })[0];
           
-
-          // Check if the element is not the container and if it has a connection, then ask to remove it
+          // Check if the element is not the container and if it has a connection, then ask user to remove it
           if (self.fromEl.classList.contains("inputMarker") && sourceEl.inputConnectedTo ){
             if (confirm('Do you want to remove this connection?')) {
-                sourceEl.element.input = null;
+                sourceEl.element.input = null; // TODO: switch to called clearData on the element
                 sourceEl.inputConnectedTo = false;
             } 
           }
+          console.log(self.elements);
         },
         showControls: function(e) {
           console.log("show controls");
@@ -567,7 +535,6 @@
         },
         dragStart: function(e, detail, selection){
           this.fromEl = selection;
-          console.log(this.fromEl);
           
           // selection.style.border = "3px solid "+this.colors.accents[selection.id];
         },
@@ -583,11 +550,10 @@
 
         },
         allowDrop: function(e,detail,selection){
-          console.log('allow drop');
           event.preventDefault(); // allows drop event on this element
         },
         dragLeave: function(e, detail, selection){
-          // selection.style.border = "3px solid #ddd";
+          selection.style.border = "3px solid #ddd";
         },
         dropped: function(e, detail, selection){
           console.log("drop");
@@ -633,17 +599,36 @@
           
           return colors;
         },
-        displayOutputAvailable: function(e){
-          var el  = e.detail.tagName.toLowerCase();
-          var output = e.detail.output;
-          var outputMarker = this.$.container.querySelector('li.'+el+ '.outputMarker');
-          if (output.length>0){
-            var outputId = outputMarker.id;
-            outputMarker.style.border="3px solid "+this.colors.accents[outputId];
-          } else {
-            outputMarker.style.border="3px solid #ddd";
-          }
+        showOutputAvailable: function(e){
+          var el = e.detail.tagName.toLowerCase(),
+              output = e.detail.output,
+              outputMarker = this.$.container.querySelector('li.'+el+ '.outputMarker');
 
+          var element = this.elements.filter(function(elem){
+            return elem.name == el;
+          })[0];
+
+          element.outputReady = output && output.length>0 ? true : false; 
+        },
+        showInputAvailable: function(e){
+          var el = e.detail.tagName.toLowerCase(),
+              input = e.detail.input,
+              inputMarker = this.$.container.querySelector('li.'+el+ '.inputMarker');
+          
+          var element = this.elements.filter(function(elem){
+            return elem.name == el;
+          })[0];
+
+          element.inputReady = input && input.length>0 ? true : false; 
+
+        },
+        findElByName: function(name){
+          var self = this;
+          element = self.elements.filter(function(el){
+            return el.name === name;
+          })[0];
+
+          return element
         }
       });
 
