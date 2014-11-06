@@ -153,7 +153,7 @@
       .wrapper {
         border: 2px solid #ddd;
         display: inline-block;
-        position: relative;
+        position: absolute;
         margin: 20px;
         margin-left: 60px;
       }
@@ -169,8 +169,9 @@
       .wrapper li {
         list-style: none;
         /*margin-left: -40px;*/
-        /*display: inline-block;*/
-        position: relative;
+        display: inline-block;
+/*        position: relative;
+*/
         font-size: 9px;
       }
 
@@ -179,21 +180,26 @@
 
       .inputMarker {
         /*margin-left: -40px;*/
-        width: 30px;
-        height: 30px;
+        width: 10px;
+        height: 10px;
         border: 3px solid #ddd;
         border-radius: 15px;
         box-sizing: border-box;
         /*margin-top: 0px;*/
+
+/*        position: absolute;
+*/      
       }
 
       .outputMarker {
-        width: 30px;
-        height: 30px;
+        width: 10px;
+        height: 10px;
         border: 3px solid #ddd;
         border-radius: 15px;
         box-sizing: border-box;
-      }
+
+/*        position: absolute;
+*/      }
 
       .wrapper label{
         position: absolute;
@@ -271,13 +277,15 @@
 
   <div id="container" on-dragover="{{allowDrop}}" on-drop="{{_removeConnection}}">
     <template repeat="{{el, index in elements}}">
-      <div class="wrapper {{el.name}}" on-th-output-changed="{{displayOutputAvailable}}">
-        <label>{{el.name}}</label>
+
+       <div class="wrapper {{el.name}}" style="left: {{el.element.offsetLeft}}px; top : {{el.element.offsetTop- 50}}px" on-th-output-changed="{{displayOutputAvailable}}">
+ 
+        <!-- <label>{{el.name}}</label> -->
         
         <div id="connections" class="connections-tab" >
           <!-- Input -->
           <template if="{{el.element.publish | checkForInputAttr}}">
-            <li class="{{el.name}} inputMarker" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{dropped}}" dropzone="true" style="background-color: {{el.inputConnectedTo ? el.inputConnectedTo.color : 'none'}}; border-color:{{el.inputConnectedTo ? el.inputConnectedTo.color : '#ddd'}};" draggable="true"></li>
+            <li class="{{el.name}} inputMarker"  on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{dropped}}" dropzone="true" style="background-color: {{el.inputConnectedTo ? el.inputConnectedTo.color : 'none'}}; border-color:{{el.inputConnectedTo ? el.inputConnectedTo.color : '#ddd'}};" draggable="true"></li>
             <li>Input</li>
           </template>
 
@@ -286,12 +294,13 @@
             <li id="{{index}}"  class="{{el.name}} outputMarker" on-dragStart="{{dragStart}}" on-drag="{{drag}}" on-dragEnd="{{dragEnd}}" on-drop="{{dropped}}" draggable="true"></li>
             <li>Output</li>
           </template>
-        </div>
-        <content select="{{el.name}}"></content>
-        
+
+         </div>
+ 
 
       </div>
     </template>
+        <content ></content>
   </div>
 
 
@@ -427,6 +436,17 @@
                                       name: el.tagName.toLowerCase(), 
                                       outputReady: false
                                   });
+
+                var positionYObserver = new PathObserver(el, 'offsetTop');
+         
+                     positionYObserver.open(function(newValue, oldValue) {
+                     
+                     console.log('moved', newValue);
+                     //targetEl[targetField] = newValue;
+                     
+                });
+                console.log('positionYObserver',positionYObserver);
+
               }
           
           });
@@ -539,8 +559,14 @@
           }
         },
         showControls: function(e) {
-          console.log("show controls");
+          // var self = this;
+          // setTimeout(function() {
+          //   console.log('ofset',self.elements[0].element.offsetTop);
+          // },1000)
+          // console.log("show controls");
+
           this.$.ctrl_collapse.toggle();
+          
         } ,
 
         watchMutation: function() {
