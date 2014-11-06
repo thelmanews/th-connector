@@ -188,8 +188,7 @@
       }
 
       .outputMarker {
-        /*margin-left: -40px;*/
-         width: 30px;
+        width: 30px;
         height: 30px;
         border: 3px solid #ddd;
         border-radius: 15px;
@@ -223,7 +222,7 @@
           <label for="src_component">From:</label>
           <core-selector id="src_component">
             <template repeat="{{el in elements}}">
-              <div class="item">{{el.tagName}}<template if="{{el.id}}">#{{el.id}}</template></div>
+              <div class="item">{{el.name}}<template if="{{el.element.id}}">#{{el.element.id}}</template></div>
             </template>
 
           </core-selector>
@@ -239,7 +238,7 @@
           <label for="target_component">To:</label>
           <core-selector id="target_component">
             <template repeat="{{el in elements}}">
-              <div class="item">{{el.tagName}}<template if="{{el.id}}">#{{el.id}}</template></div>
+              <div class="item">{{el.name}}<template if="{{el.element.id}}">#{{el.element.id}}</template></div>
             </template>
 
           </core-selector>
@@ -270,25 +269,25 @@
       </div>
   </core-collapse>
 
-  <div id="container" >
+  <div id="container" on-dragover="{{allowDrop}}" on-drop="{{_removeConnection}}">
     <template repeat="{{el, index in elements}}">
-      <div class="wrapper {{el.tagName}}" on-th-output-changed="{{displayOutputAvailable}}">
-        <label>{{el.tagName}}</label>
+      <div class="wrapper {{el.name}}" on-th-output-changed="{{displayOutputAvailable}}">
+        <label>{{el.name}}</label>
         
         <div id="connections" class="connections-tab" >
           <!-- Input -->
-          <template if="{{el.publish | checkForInputAttr}}">
-            <li class="{{el.tagName | lowerCase}} inputMarker" on-dragover="{{dragOver}}" on-dragleave="{{dragLeave}}" on-drop="{{dropped}}" dropzone="true"></li>
+          <template if="{{el.element.publish | checkForInputAttr}}">
+            <li class="{{el.name}} inputMarker" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{dropped}}" dropzone="true" style="background-color: {{el.inputConnectedTo ? el.inputConnectedTo.color : 'none'}}; border-color:{{el.inputConnectedTo ? el.inputConnectedTo.color : '#ddd'}};" draggable="true"></li>
             <li>Input</li>
           </template>
 
           <!-- Output -->
-          <template if="{{el.publish | checkForOutputAttr}}">
-            <li id="{{index}}"  class="{{el.tagName | lowerCase}} outputMarker" on-dragStart="{{dragStart}}" on-drag="{{drag}}" on-dragEnd="{{dragEnd}}" on-drop="{{dropped}}" draggable="true"></li>
+          <template if="{{el.element.publish | checkForOutputAttr}}">
+            <li id="{{index}}"  class="{{el.name}} outputMarker" on-dragStart="{{dragStart}}" on-drag="{{drag}}" on-dragEnd="{{dragEnd}}" on-drop="{{dropped}}" draggable="true"></li>
             <li>Output</li>
           </template>
         </div>
-        <content select="{{el.tagName | lowerCase}}"></content>
+        <content select="{{el.name}}"></content>
         
 
       </div>
@@ -421,14 +420,23 @@
                 console.log('drag');
                 this.style.opacity= 1;
               });
-              if(boringTags.indexOf(el.tagName.toLowerCase())<0) {
-
-
-                self.elements.push(el);
+              var index=boringTags.indexOf(el.tagName.toLowerCase());
+              if(index<0) {
+                // self.elements.push(el);
+                self.elements.push({  element: el, 
+                                      name: el.tagName.toLowerCase(), 
+                                      outputReady: false
+                                  });
               }
-              
-              
+          
           });
+
+          for (var i=0; i<self.elements.length; i++){
+            self.elements[i].color = self.colors.accents[i];
+
+          }
+          console.log("$$$$");
+          console.log(self.elements);
 
         },
 
@@ -459,23 +467,44 @@
           var self = this;
 
           // check if source/target are dom element or query selector string:
+          var source = (typeof source === "string") ? self.querySelector(source) : source;
+          var target = (typeof target === "string") ? self.querySelector(target): target;
+ 
+          // select the source and target el in the elements array
+          var sourceEl = self.elements.filter(function(el){
+            return el.element == source;
+          })[0];
 
-          var srcEl = (typeof source === "string") ? self.querySelector(source) : source;
-          var targetEl = (typeof target === "string") ? self.querySelector(target): target;
+          var targetEl = self.elements.filter(function(el){
+            return el.element == target;
+          })[0];
 
-          var observer = new PathObserver(srcEl, sourceField);
+          targetEl.inputConnectedTo = sourceEl;
+          console.log(targetEl);
+          // target.setAttribute.draggable = true;
+
+          // for (var i=0; i<self.elements.length; i++){
+          //   if(self.elements[i].element == target){
+          //     self.elements[i].inputConnectedTo = sourceEl;
+          //   }  
+          // }
+
+          var observer = new PathObserver(sourceEl.element, sourceField);
+   
                observer.open(function(newValue, oldValue) {
                targetEl[targetField] = newValue;
-
+               
           });
 
           //to set the value when elements are connected
-          targetEl[targetField] = srcEl[sourceField];  
+          targetEl.element[targetField] = sourceEl.element[sourceField];  
 
           self._connections.push({
-            sourceEl: (typeof source === "string") ? source : source.tagName+(source.id ? '#'+source.id : ''),
+            // sourceEl: (typeof source === "string") ? source : source.tagName+(source.id ? '#'+source.id : ''),
+            sourceEl: sourceEl.name + (sourceEl.element.id ? sourceEl.element.id : ''),
             sourceProperty: sourceField,
-            targetEl: (typeof target === "string") ? target : target.tagName+(target.id ? '#'+target.id : ''),
+            targetEl: targetEl.name + (targetEl.element.id ? targetEl.element.id : ''),
+            // targetEl: (typeof target === "string") ? target : target.tagName+(target.id ? '#'+target.id : ''),
             targetProperty: targetField,
             observer: observer
          });
@@ -492,7 +521,23 @@
           self._connections.splice(index, 1);
 
         },
+        _removeConnection: function(e, detail, selection){
+          var self = this;
+          
+          // Select the element being dragged from elements array
+          var sourceEl = self.elements.filter(function(el){
+            return el.name == self.fromEl.classList[0];
+          })[0];
+          
 
+          // Check if the element is not the container and if it has a connection, then ask to remove it
+          if (self.fromEl.classList.contains("inputMarker") && sourceEl.inputConnectedTo ){
+            if (confirm('Do you want to remove this connection?')) {
+                sourceEl.element.input = null;
+                sourceEl.inputConnectedTo = false;
+            } 
+          }
+        },
         showControls: function(e) {
           console.log("show controls");
           this.$.ctrl_collapse.toggle();
@@ -512,9 +557,6 @@
 
 
           },
-        lowerCase: function(value){
-          return value.toLowerCase();
-        },
         checkForInputAttr: function(value){
 
           return Object.keys(value).indexOf("input") > -1 ? true : false;
@@ -525,8 +567,9 @@
         },
         dragStart: function(e, detail, selection){
           this.fromEl = selection;
+          console.log(this.fromEl);
           
-          selection.style.border = "3px solid "+this.colors.accents[selection.id];
+          // selection.style.border = "3px solid "+this.colors.accents[selection.id];
         },
         drag: function(e, detail, selection){
           // console.log(e);
@@ -535,16 +578,21 @@
           // console.log(e);
         },
         dragOver: function(e, detail, selection){
-          selection.style.border = "3px solid "+this.colors.accents[this.fromEl.id];
+          selection.style.border = "3px solid "+this.colors.accents[this.fromEl.id];  
           event.preventDefault(); // allows drop event on this element
 
         },
+        allowDrop: function(e,detail,selection){
+          console.log('allow drop');
+          event.preventDefault(); // allows drop event on this element
+        },
         dragLeave: function(e, detail, selection){
-          selection.style.border = "3px solid #ddd";
+          // selection.style.border = "3px solid #ddd";
         },
         dropped: function(e, detail, selection){
+          console.log("drop");
           selection.style.border = "3px solid "+this.colors.accents[this.fromEl.id];
-          selection.style.backgroundColor = this.colors.accents[this.fromEl.id];
+          // selection.style.backgroundColor = this.colors.accents[this.fromEl.id];
           this.connectAttributes(this.fromEl.classList[0],'output',selection.classList[0],'input');
           
         },
@@ -589,8 +637,7 @@
           var el  = e.detail.tagName.toLowerCase();
           var output = e.detail.output;
           var outputMarker = this.$.container.querySelector('li.'+el+ '.outputMarker');
-          if (output){
-            
+          if (output.length>0){
             var outputId = outputMarker.id;
             outputMarker.style.border="3px solid "+this.colors.accents[outputId];
           } else {
