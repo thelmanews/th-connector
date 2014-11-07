@@ -144,12 +144,32 @@
         vertical-align: top;
       }
 
+      /* Style above can be removed? */
 
-      .elTitle {
-        color: #2fa3af;
-        padding: 2px;
+      .connections {
+        margin: 0px 0px 30px 30px;
       }
-      
+
+      .connections core-icon, .connections core-icon-button::shadow core-icon {
+        height: 20px;
+      }
+
+      .connections ul {
+        list-style: none;
+      }
+
+      .connections li {
+        padding-left: 5px;
+        /*padding: 0;*/
+      }
+      .connection-list {
+        border: 2px solid #ddd;
+        
+        width: 500px;
+        /*padding: 10px;*/
+
+      }
+
       .wrapper {
         border: 2px solid #ddd;
         display: inline-block;
@@ -158,40 +178,35 @@
         margin-left: 60px;
       }
 
-      .connections-tab {
+      .connectors-tab {
         width: 40px;
         margin-left: -40px;
         position: absolute;
         top: 0;
-
+        text-align: center;
       }
 
       .wrapper li {
         list-style: none;
-        /*margin-left: -40px;*/
-        /*display: inline-block;*/
         position: relative;
         font-size: 9px;
+        margin: 2px auto;
       }
-
-      
 
 
       .inputMarker {
-        /*margin-left: -40px;*/
-        width: 30px;
-        height: 30px;
+        width: 24px;
+        height: 24px;
         border: 3px solid #ddd;
-        border-radius: 15px;
+        border-radius: 12px;
         box-sizing: border-box;
-        /*margin-top: 0px;*/
       }
 
       .outputMarker {
-        width: 30px;
-        height: 30px;
+        width: 24px;
+        height: 24px;
         border: 3px solid #ddd;
-        border-radius: 15px;
+        border-radius: 12px;
         box-sizing: border-box;
       }
 
@@ -201,21 +216,15 @@
         left: 0;
         padding: 0;
         overflow: visible;
-
       }
-
-
 
     </style>
     <div class="connectors">
     </div>
 
-    <span class="elTitle">th-connector</span>
 
-    <core-icon-button icon="perm-data-setting" on-click="{{showControls}}"></core-icon-button>
 
-    <core-collapse id="ctrl_collapse">
-  
+<!--     <core-collapse id="ctrl_collapse">
       <div class="panel">
         <h3>Connection Panel</h3>
         <div class="from selector">
@@ -249,12 +258,8 @@
             </template>
 
           </core-selector>
-        </div>
-  <!--       <template if="{{_srcPropertySelection && _targetPropertySelection}}">
-   -->        
-            <input type="button" id="connect" value="connect" style="{{(_srcPropertySelection && _targetPropertySelection) ? 'display: block' : ''}}"></input>
-  <!--       </template>
-   --> 
+        </div>      
+        <input type="button" id="connect" value="connect" style="{{(_srcPropertySelection && _targetPropertySelection) ? 'display: block' : ''}}"></input>
         <div class="connections">
             <label>connections: </label>
             <ul>
@@ -267,29 +272,57 @@
         </div>
 
       </div>
-  </core-collapse>
+  </core-collapse> -->
 
-    <div id="container" on-dragover="{{allowDrop}}" on-drop="{{_removeConnection}}">
+
+
+    
+    <div id="container" on-dragover="{{allowDrop}}" on-drop="{{droppedInContainer}}">
+      
+      <!-- Connections -->
+      <div class="connections">
+        <span class="elTitle">Connections</span>
+        <core-icon-button icon="view-list" on-click="{{showControls}}"></core-icon-button>
+        <core-collapse id="ctrl_collapse">
+            <div class="connection-list">
+              <ul>
+                <template if="{{!connections || connections.length < 1}}"> 
+                  <li>No connections. To make a connection, drag the bubble of one component over another.</li> 
+                </template>
+
+                <template repeat="{{connection, index in connections}}">  
+                  <li class="connection">
+                    <core-icon icon="check-circle-blank" style="color:{{connection.source.color}};"></core-icon>
+                    {{connection.source.name}} ({{connection.sourceAttr}}) 
+                    <core-icon icon="arrow-forward"></core-icon> 
+                    {{connection.target.name}} ({{connection.targetAttr}})
+                    <core-icon-button icon="delete" id="{{connection.target.name}}" on-click="{{_deleteConnectionFromList}}"></core-icon-button>
+                  </li>
+                </template>
+              </ul>
+            </div>
+        </core-collapse>
+      </div>
+
+      <!-- Components and connector dots --> 
       <template repeat="{{el, index in elements}}">
-        <div class="wrapper {{el.name}}" on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}">
+        <div class="wrapper {{el.name}}" on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" draggable="true">
           <label>{{el.name}}</label>
           
-          <div id="connections" class="connections-tab" >
+          <div id="connectors" class="connectors-tab" >
             <!-- Input -->
             <template if="{{el.element.publish | checkForInputAttr}}">
-              <li class="{{el.name}} inputMarker" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{dropped}}" dropzone="true" style="background-color: {{el.inputConnectedTo ? el.inputConnectedTo.color : el.inputReady ? '#ddd' : 'none'}}; border-color:{{el.inputConnectedTo ? el.inputConnectedTo.color : '#ddd'}};" draggable="true"></li>
+              <li class="{{el.name}} inputMarker" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{connectBubble}}" style="background-color: {{el.inputConnectedTo ? el.inputConnectedTo.color : el.inputReady ? defaultColor : 'none'}}; border-color:{{el.inputConnectedTo ? el.inputConnectedTo.color : defaultColor}};" draggable="true"></li>
               <li>Input</li>
             </template>
 
             <!-- Output -->
             <template if="{{el.element.publish | checkForOutputAttr}}">
-              <li id="{{index}}"  class="{{el.name}} outputMarker" on-dragStart="{{dragStart}}" on-drag="{{drag}}" on-dragEnd="{{dragEnd}}" on-drop="{{dropped}}" draggable="true" style="border-color: {{el.outputReady ? el.color : '#ddd'}}"></li>
+              <li id="{{index}}"  class="{{el.name}} outputMarker" on-dragStart="{{dragStart}}" on-drag="{{drag}}" on-dragEnd="{{dragEnd}}"  draggable="true" style="border-color: {{el.outputReady ? el.color : defaultColor}}"></li>
               <li>Output</li>
             </template>
           </div>
           <content select="{{el.name}}"></content>
-          
-
         </div>
       </template>
     </div>
@@ -310,83 +343,84 @@
         domReady: function() {
           var self = this;
 
+          // Set colors
+          self.defaultColor = '#ddd';
           self.colors = self.getThemeColors();
+
           self._updateFields();
-
-          // update fields when an element is added to the component (e.g. added to content)
-          //this.onMutation(this, self._updateFields);
-          
-          this.watchMutation();
-
-          self.$.src_component.addEventListener('core-select', function() {
-            if(!this.selection) {
-              return;
-            }
-            var prev = self.querySelector('.selected-src-element')
-            if(prev) {
-              prev.classList.remove('selected-src-element');
-            }
-            self.querySelector(this.selection.textContent).classList.add('selected-src-element');
-            self._srcElementSelection = this.selection.textContent;
-            self._srcAttrs = self._displayFields(this);
-            self._srcPropertySelection = null;
-
-          });
-          self.$.src_attrs.addEventListener('core-select', function() {
-            if(!this.selection) {
-              return;
-            }
-            self._srcPropertySelection = this.selection.textContent;
-
-          });
-
-          self.$.target_component.addEventListener('core-select', function() {
-            if(!this.selection) {
-              return;
-            }
-            self._targetElementSelection = this.selection.textContent;
-            var prev = self.querySelector('.selected-target-element')
-            if(prev) {
-              prev.classList.remove('selected-target-element');
-            }
-            self.querySelector(this.selection.textContent).classList.add('selected-target-element');
-            self._targetAttrs = self._displayFields(this);
-            self._targetPropertySelection = null;
-
-          });
-          self.$.target_attrs.addEventListener('core-select', function() {
-            if(!this.selection) {
-              return;
-            }
-            self._targetPropertySelection = this.selection.textContent;
-
-          });
-
-          self.$.connect.addEventListener('click', function() {
-            self.connectAttributes(self._srcElementSelection, self._srcPropertySelection,
-                                 self._targetElementSelection, self._targetPropertySelection);
+          self.watchMutation();
 
 
-          });
+          // self.$.src_component.addEventListener('core-select', function() {
+          //   if(!this.selection) {
+          //     return;
+          //   }
+          //   var prev = self.querySelector('.selected-src-element')
+          //   if(prev) {
+          //     prev.classList.remove('selected-src-element');
+          //   }
+          //   self.querySelector(this.selection.textContent).classList.add('selected-src-element');
+          //   self._srcElementSelection = this.selection.textContent;
+          //   self._srcAttrs = self._displayFields(this);
+          //   self._srcPropertySelection = null;
+
+          // });
+
+          // self.$.src_attrs.addEventListener('core-select', function() {
+          //   if(!this.selection) {
+          //     return;
+          //   }
+          //   self._srcPropertySelection = this.selection.textContent;
+
+          // });
+
+          // self.$.target_component.addEventListener('core-select', function() {
+          //   if(!this.selection) {
+          //     return;
+          //   }
+          //   self._targetElementSelection = this.selection.textContent;
+          //   var prev = self.querySelector('.selected-target-element')
+          //   if(prev) {
+          //     prev.classList.remove('selected-target-element');
+          //   }
+          //   self.querySelector(this.selection.textContent).classList.add('selected-target-element');
+          //   self._targetAttrs = self._displayFields(this);
+          //   self._targetPropertySelection = null;
+
+          // });
+
+          // self.$.target_attrs.addEventListener('core-select', function() {
+          //   if(!this.selection) {
+          //     return;
+          //   }
+          //   self._targetPropertySelection = this.selection.textContent;
+
+          // });
+
+          // self.$.connect.addEventListener('click', function() {
+          //   self.connectAttributes(self._srcElementSelection, self._srcPropertySelection,
+          //                        self._targetElementSelection, self._targetPropertySelection);
+          // });
 
 
         },
-
         _updateFields: function() {
           var self = this;
           var boringTags = ['div','ul','li','span','th-editor','br'];
 
           self.elements = [];
 
-          var components = self.querySelectorAll('*'); //self.children;
+          var components = self.querySelectorAll('*'); 
           [].forEach.call(components, function(el) {
-              el.setAttribute('draggable',true);
+              el.setAttribute('draggable',true); // Does this do anything?
               el.addEventListener('dragstart',function(e) {
-                this.style.opacity= 0;
+                self.fromEl = e.toElement;
               });
-              el.addEventListener('dragend',function(e) {
-                this.style.opacity= 1;
-              });
+              // el.addEventListener('drop',function(e) {
+              //   this.position = "absolute";
+              //   alert();
+              //   // console.log(e);
+              // });
               var index=boringTags.indexOf(el.tagName.toLowerCase());
               if(index<0) {
                 // self.elements.push(el);
@@ -425,86 +459,93 @@
           return attrsObj;
           
         },
+        updateConnections: function(){
+          var self = this;
+          self.connections = self.elements.filter(function(el){ return el.inputConnectedTo}).map(function(el){
+              return { 
+                target: el,
+                targetAttr: 'input',
+                source: el.inputConnectedTo,
+                sourceAttr: 'output'
+              }
+          })
+        },
 
         connectAttributes: function(source, sourceField, target, targetField) {
           console.log("connect attributes");
           var self = this;
 
           // check if source/target are dom element or query selector string:
-          var source = (typeof source === "string") ? self.querySelector(source) : source;
-          var target = (typeof target === "string") ? self.querySelector(target): target;
+          var sourceEl = (typeof source === "string") ? self.querySelector(source) : source;
+          var targetEl = (typeof target === "string") ? self.querySelector(target): target;
 
-          if (source === target){
+          if (sourceEl === targetEl){ //if a bubble was dropped on itself
             alert('You cannot make a connection within the same element');
-          } else {
+          } else { 
+            
             // select the source and target el in the elements array
-            var sourceEl = self.elements.filter(function(el){
-              return el.element == source;
+            var source = self.elements.filter(function(el){
+              return el.element == sourceEl;
             })[0];
 
-            var targetEl = self.elements.filter(function(el){
-              return el.element == target;
+            var target = self.elements.filter(function(el){
+              return el.element == targetEl;
             })[0];
 
-            targetEl.inputConnectedTo = sourceEl;
-            // target.setAttribute.draggable = true;
-
-            // for (var i=0; i<self.elements.length; i++){
-            //   if(self.elements[i].element == target){
-            //     self.elements[i].inputConnectedTo = sourceEl;
-            //   }  
-            // }
-
-            var observer = new PathObserver(sourceEl.element, sourceField);
+            // make the connection in the elements array
+            target.inputConnectedTo = source;
+            
+            var observer = new PathObserver(source.element, sourceField);
      
                  observer.open(function(newValue, oldValue) {
                  targetEl[targetField] = newValue;
                  
             });
 
-            //to set the value when elements are connected
-            targetEl.element[targetField] = sourceEl.element[sourceField];  
+            // to set the value when elements are connected
+            target.element[targetField] = source.element[sourceField];  
+
+
 
             self._connections.push({
               // sourceEl: (typeof source === "string") ? source : source.tagName+(source.id ? '#'+source.id : ''),
-              sourceEl: sourceEl.name + (sourceEl.element.id ? sourceEl.element.id : ''),
+              sourceEl: source.name + (source.element.id ? source.element.id : ''),
               sourceProperty: sourceField,
-              targetEl: targetEl.name + (targetEl.element.id ? targetEl.element.id : ''),
+              targetEl: target.name + (target.element.id ? target.element.id : ''),
               // targetEl: (typeof target === "string") ? target : target.tagName+(target.id ? '#'+target.id : ''),
               targetProperty: targetField,
               observer: observer
            });
           }
-
+          self.updateConnections();
           console.log(self.elements);
 
         },
-
-        _deleteConnectionHandler: function(e, detail, sender) {
-          console.log("delete connection handler");
-          var self = this;
-          var index = e.target.getAttribute('data-index');
-          var observer = self._connections[index].observer;
-          observer.close();
-          self._connections.splicge(index, 1);
+        _deleteConnectionFromList: function(e, detail, selection){
+          var self = this,
+              targetEl = self.findElByName(selection.id);
+          
+          self._deleteConnection(targetEl);
 
         },
-        _removeConnection: function(e, detail, selection){
+        _deleteConnectionFromBubble: function(e, detail, selection){
           var self = this;
           
-          // Select the element being dragged from elements array
-          var sourceEl = self.elements.filter(function(el){
-            return el.name == self.fromEl.classList[0];
-          })[0];
-          
+          // Select the element being dragged from elements array          
+          var targetEl = self.findElByName(self.fromEl.classList[0]);
+
           // Check if the element is not the container and if it has a connection, then ask user to remove it
-          if (self.fromEl.classList.contains("inputMarker") && sourceEl.inputConnectedTo ){
-            if (confirm('Do you want to remove this connection?')) {
-                sourceEl.element.input = null; // TODO: switch to called clearData on the element
-                sourceEl.inputConnectedTo = false;
-            } 
+          if (targetEl.inputConnectedTo ){
+            self._deleteConnection(targetEl);
           }
-          console.log(self.elements);
+        },
+        _deleteConnection: function(targetEl){
+          var self = this;
+          if (confirm('Do you want to remove this connection?')) {
+              targetEl.element.input = null; // TODO: switch to called clearData on the element
+              targetEl.inputConnectedTo = false;
+          } 
+          self.updateConnections();
         },
         showControls: function(e) {
           console.log("show controls");
@@ -550,13 +591,24 @@
 
         },
         allowDrop: function(e,detail,selection){
+         
           event.preventDefault(); // allows drop event on this element
         },
         dragLeave: function(e, detail, selection){
-          selection.style.border = "3px solid #ddd";
+          selection.style.border = "3px solid "+this.defaultColor;
         },
-        dropped: function(e, detail, selection){
+        droppedInContainer: function(e, detail, selection){
+          var self = this;
+          
+          if(self.fromEl.classList.contains("inputMarker")){
+            self._deleteConnectionFromBubble(e, detail, selection);
+          }else if (self.fromEl.tagName != 'LI'){
+            // It's probably a component that got drag/dropped. Do something here.
+          }
+        },
+        connectBubble: function(e, detail, selection){ //TODO: rename to be specific to circles filling up to show conenction
           console.log("drop");
+          // TODO: 
           selection.style.border = "3px solid "+this.colors.accents[this.fromEl.id];
           // selection.style.backgroundColor = this.colors.accents[this.fromEl.id];
           this.connectAttributes(this.fromEl.classList[0],'output',selection.classList[0],'input');
