@@ -281,7 +281,7 @@
       
       <!-- Connections -->
       <div class="connections">
-        <span class="elTitle">Connections</span>
+        <span class="elTitle">{{connections.length}} Connections</span>
         <core-icon-button icon="view-list" on-click="{{showControls}}"></core-icon-button>
         <core-collapse id="ctrl_collapse">
             <div class="connection-list">
@@ -322,7 +322,7 @@
               <li>Output</li>
             </template>
           </div>
-          <content select="{{el.name}}"></content>
+          <content select="#{{el.element.id}}"></content>
         </div>
       </template>
     </div>
@@ -338,11 +338,12 @@
         _srcPropertySelection: null,
         _targetElementSelection: null,
         _targetPropertySelection: null,
-        _connections: [],
+        _connections: [], // retire?
+        connections: [],
 
         domReady: function() {
           var self = this;
-
+          self.showControls();
           // Set colors
           self.defaultColor = '#ddd';
           self.colors = self.getThemeColors();
@@ -398,7 +399,7 @@
           // });
 
           // self.$.connect.addEventListener('click', function() {
-          //   self.connectAttributes(self._srcElementSelection, self._srcPropertySelection,
+          //   self._connectAttributes(self._srcElementSelection, self._srcPropertySelection,
           //                        self._targetElementSelection, self._targetPropertySelection);
           // });
 
@@ -416,16 +417,16 @@
               el.addEventListener('dragstart',function(e) {
                 self.fromEl = e.toElement;
               });
-              // el.addEventListener('drop',function(e) {
-              //   this.position = "absolute";
-              //   alert();
-              //   // console.log(e);
-              // });
-              var index=boringTags.indexOf(el.tagName.toLowerCase());
+
+              var elName = el.tagName.toLowerCase();
+
+              // Set unique ID to each element
+              el.id = self.generateUniqueId(elName);
+
+              var index=boringTags.indexOf(elName);
               if(index<0) {
-                // self.elements.push(el);
                 self.elements.push({  element: el, 
-                                      name: el.tagName.toLowerCase(), 
+                                      name: elName, 
                                       outputReady: false,
                                       inputReady: false
                                   });
@@ -435,9 +436,8 @@
 
           for (var i=0; i<self.elements.length; i++){
             self.elements[i].color = self.colors.accents[i];
-
           }
-
+          console.log(self.elements);
         },
 
         _displayFields: function(selector) {
@@ -470,8 +470,7 @@
               }
           })
         },
-
-        connectAttributes: function(source, sourceField, target, targetField) {
+        _connectAttributes: function(source, sourceField, target, targetField) {
           console.log("connect attributes");
           var self = this;
 
@@ -495,27 +494,27 @@
             // make the connection in the elements array
             target.inputConnectedTo = source;
             
-            var observer = new PathObserver(source.element, sourceField);
+            // var observer = new PathObserver(source.element, sourceField);
      
-                 observer.open(function(newValue, oldValue) {
-                 targetEl[targetField] = newValue;
+            //      observer.open(function(newValue, oldValue) {
+            //      targetEl[targetField] = newValue;
                  
-            });
+            // });
 
             // to set the value when elements are connected
             target.element[targetField] = source.element[sourceField];  
 
 
 
-            self._connections.push({
-              // sourceEl: (typeof source === "string") ? source : source.tagName+(source.id ? '#'+source.id : ''),
-              sourceEl: source.name + (source.element.id ? source.element.id : ''),
-              sourceProperty: sourceField,
-              targetEl: target.name + (target.element.id ? target.element.id : ''),
-              // targetEl: (typeof target === "string") ? target : target.tagName+(target.id ? '#'+target.id : ''),
-              targetProperty: targetField,
-              observer: observer
-           });
+           //  self._connections.push({
+           //    // sourceEl: (typeof source === "string") ? source : source.tagName+(source.id ? '#'+source.id : ''),
+           //    sourceEl: source.name + (source.element.id ? source.element.id : ''),
+           //    sourceProperty: sourceField,
+           //    targetEl: target.name + (target.element.id ? target.element.id : ''),
+           //    // targetEl: (typeof target === "string") ? target : target.tagName+(target.id ? '#'+target.id : ''),
+           //    targetProperty: targetField,
+           //    observer: observer
+           // });
           }
           self.updateConnections();
           console.log(self.elements);
@@ -567,7 +566,7 @@
 
           },
         checkForInputAttr: function(value){
-
+        console.log(Object.keys(value));
           return Object.keys(value).indexOf("input") > -1 ? true : false;
         },
         checkForOutputAttr: function(value){
@@ -611,7 +610,7 @@
           // TODO: 
           selection.style.border = "3px solid "+this.colors.accents[this.fromEl.id];
           // selection.style.backgroundColor = this.colors.accents[this.fromEl.id];
-          this.connectAttributes(this.fromEl.classList[0],'output',selection.classList[0],'input');
+          this._connectAttributes(this.fromEl.classList[0],'output',selection.classList[0],'input');
           
         },
         getThemeColors: function(){
@@ -681,6 +680,19 @@
           })[0];
 
           return element
+        },
+        generateUniqueId: function(elName){
+          var self = this;
+          var num = 0;
+          var tagsWithSameName = self.elements.filter(function(elem){return elem.name == elName});
+          
+          if(tagsWithSameName){
+            num+= tagsWithSameName.length;
+          } 
+          
+          var uniqueId = elName + '-' + num;
+          
+          return uniqueId;
         }
       });
 
