@@ -628,24 +628,20 @@
           return colors;
         },
         showOutputAvailable: function(e){
-          var el = e.detail.tagName.toLowerCase(),
+          var elId = e.detail.id,
               output = e.detail.output,
-              outputMarker = this.$.container.querySelector('li.'+el+ '.outputMarker');
+              outputMarker = this.$.container.querySelector('li.'+elId+ '.outputMarker');
 
-          var element = this.elements.filter(function(elem){
-            return elem.name == el;
-          })[0];
+          var element = this.findElById(elId);
 
           element.outputReady = output && output.length>0 ? true : false; 
         },
         showInputAvailable: function(e){
-          var el = e.detail.tagName.toLowerCase(),
+          var elId = e.detail.id,
               input = e.detail.input,
-              inputMarker = this.$.container.querySelector('li.'+el+ '.inputMarker');
+              inputMarker = this.$.container.querySelector('li.'+elId+ '.inputMarker');
           
-          var element = this.elements.filter(function(elem){
-            return elem.name == el;
-          })[0];
+          var element = this.findElById(elId);
 
           element.inputReady = input && input.length>0 ? true : false; 
 
