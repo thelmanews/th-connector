@@ -278,11 +278,11 @@
   <div id="container" on-dragover="{{allowDrop}}" on-drop="{{_removeConnection}}">
     <template repeat="{{el, index in elements}}">
 
-       <div class="wrapper {{el.name}}" style="left: {{el.element.offsetLeft}}px; top : {{el.element.offsetTop- 50}}px" on-th-output-changed="{{displayOutputAvailable}}">
+       <div class="wrapper {{el.name}}" on-dragover="{{allowDrop}}" on-drop="{{_removeConnection}}" style="left: {{el.element.offsetLeft}}px; top : {{el.element.offsetTop- 50}}px" on-th-output-changed="{{displayOutputAvailable}}">
  
         <!-- <label>{{el.name}}</label> -->
         
-        <div id="connections" class="connections-tab" >
+        <div id="connections"  on-dragover="{{allowDrop}}" on-drop="{{_removeConnection}}"  class="connections-tab" >
           <!-- Input -->
           <template if="{{el.element.publish | checkForInputAttr}}">
             <li class="{{el.name}} inputMarker"  on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{dropped}}" dropzone="true" style="background-color: {{el.inputConnectedTo ? el.inputConnectedTo.color : 'none'}}; border-color:{{el.inputConnectedTo ? el.inputConnectedTo.color : '#ddd'}};" draggable="true"></li>
@@ -420,6 +420,7 @@
 
           var components = self.querySelectorAll('*'); //self.children;
           [].forEach.call(components, function(el) {
+              /*
               el.setAttribute('draggable',true);
               el.addEventListener('dragstart',function(e) {
                 console.log('drag');
@@ -429,6 +430,10 @@
                 console.log('drag');
                 this.style.opacity= 1;
               });
+              */
+             
+              //this is needed to allow disconnecting             
+              el.addEventListener('on-dragover',self.allowDrop);
               var index=boringTags.indexOf(el.tagName.toLowerCase());
               if(index<0) {
                 // self.elements.push(el);
@@ -441,7 +446,7 @@
          
                      positionYObserver.open(function(newValue, oldValue) {
                      
-                     console.log('moved', newValue);
+                     console.log('!!!!!!!! moved', newValue);
                      //targetEl[targetField] = newValue;
                      
                 });
@@ -559,11 +564,13 @@
           }
         },
         showControls: function(e) {
-          // var self = this;
-          // setTimeout(function() {
-          //   console.log('ofset',self.elements[0].element.offsetTop);
-          // },1000)
-          // console.log("show controls");
+          var self = this;
+          setTimeout(function() {
+            console.log('ofset',self.elements[0].element.offsetTop);
+            //self.dragStart();
+            self.fromEl = null;
+          },500);
+          console.log("show controls");
 
           this.$.ctrl_collapse.toggle();
           
@@ -592,31 +599,37 @@
           return Object.keys(value).indexOf("output") > -1 ? true : false;
         },
         dragStart: function(e, detail, selection){
+          console.log('dragstart');
           this.fromEl = selection;
-          console.log(this.fromEl);
+          console.log(this);
           
           // selection.style.border = "3px solid "+this.colors.accents[selection.id];
         },
         drag: function(e, detail, selection){
+          console.log('drag');
           // console.log(e);
         },
         dragEnd: function(e, detail, selection){
+          console.log('dragEnd');
           // console.log(e);
         },
         dragOver: function(e, detail, selection){
+          console.log('dragOver');
+
           selection.style.border = "3px solid "+this.colors.accents[this.fromEl.id];  
-          event.preventDefault(); // allows drop event on this element
+          e.preventDefault(); // allows drop event on this element
 
         },
         allowDrop: function(e,detail,selection){
           console.log('allow drop');
-          event.preventDefault(); // allows drop event on this element
+          e.preventDefault(); // allows drop event on this element
         },
         dragLeave: function(e, detail, selection){
+          console.log('dragLeave');
           // selection.style.border = "3px solid #ddd";
         },
         dropped: function(e, detail, selection){
-          console.log("drop");
+          console.log("dropped");
           selection.style.border = "3px solid "+this.colors.accents[this.fromEl.id];
           // selection.style.backgroundColor = this.colors.accents[this.fromEl.id];
           this.connectAttributes(this.fromEl.classList[0],'output',selection.classList[0],'input');
