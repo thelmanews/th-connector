@@ -15,6 +15,7 @@
   <link rel="import" href="th-connector.html">
   <link rel="import" href="../th-geocoder-firebase/th-geocoder-firebase.html">
   <link rel="import" href="../th-csv/th-csv.html">
+  <link rel="import" href="../th-mapbox/th-mapbox.html">
   <link rel="import" href="../th-google-map/th-google-map.html">
   <link rel="import" href="../th-paste-data/th-paste-data.html">
   <link rel="import" href="../th-array-function/th-array-function.html">
@@ -32,7 +33,8 @@
       <th-geocoder-firebase firebaseLocation="https://sweltering-fire-3844.firebaseio.com/" style="min-width: 150px"></th-geocoder-firebase> 
       <th-geocoder-firebase firebaseLocation="https://sweltering-fire-3844.firebaseio.com/" style="min-width: 150px"></th-geocoder-firebase>  
       <th-google-map fitToMarkers width="600" height="400">  </th-google-map>
-      <th-google-map fitToMarkers width="300" height="400">  </th-google-map>
+      <!-- <th-google-map fitToMarkers width="300" height="400">  </th-google-map> -->
+      <th-mapbox width="300" height="450" accessToken="pk.eyJ1IjoidGhlbG1hIiwiYSI6Ikd3RUlsTTQifQ.i6bojdSBKd6JHENLKsRjTA" mapId="examples.map-i87786ca" geolocation="false" showSwipeBar="false" ></th-mapbox>
   </th-connector>
 
   <!-- 
