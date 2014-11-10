@@ -13,13 +13,9 @@
 
   <script src="../platform/platform.js"></script>
   <link rel="import" href="th-connector.html">
-  <link rel="import" href="../th-geocoder-firebase/th-geocoder-firebase.html">
-  <link rel="import" href="../th-csv/th-csv.html">
   <link rel="import" href="../th-enigma/th-enigma.html">
-  <link rel="import" href="../th-google-map/th-google-map.html">
   <link rel="import" href="../th-map-us/th-map-us.html">
   <link rel="import" href="../th-paste-data/th-paste-data.html">
-  <link rel="import" href="../th-chart-editor/th-chart-editor.html">
   <link rel="import" href="../th-n-bar-chart/th-n-bar-chart.html">
   <link rel="import" href="../th-chart-data-filter/th-chart-data-filter.html">
 
@@ -30,13 +26,10 @@
   <p>An example of using <code>&lt;th-connector></code>:</p>
 
   <th-connector animateOnInit="true">
-      <!-- <th-csv url="../th-csv/assets/berlin.csv"></th-csv> -->
-      <th-geocoder-firebase firebaseLocation="https://sweltering-fire-3844.firebaseio.com/" style="min-width: 150px"></th-geocoder-firebase>
-      <th-chart-data-filter></th-chart-data-filter>
       <th-enigma></th-enigma>
+      <th-chart-data-filter></th-chart-data-filter>
       <th-n-bar-chart animateOnInit="true"></th-n-bar-chart>
       <th-map-us animateOnInit="true" chartWidth="300"></th-map-us>
-      <!-- <th-google-map fitToMarkers width="600" height="400">  </th-google-map> -->
   </th-connector>
 
 </body>
