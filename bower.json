@@ -13,20 +13,28 @@
     "th-theme": "thelmanews/th-theme",
     "th-mapbox": "thelmanews/th-mapbox",
     "th-geocoder-firebase": "thelmanews/th-geocoder-firebase",
-    "thelma-meta-components": "thelmanews/th-csv",
+    "th-csv": "thelmanews/th-csv",
+    "th-enigma": "thelmanews/th-enigma",
     "th-google-map": "thelmanews/th-google-map",
-    "th-map-function": "thelmanews/th-array-function",
+    "th-array-function": "thelmanews/th-array-function",
+    "th-chart-data-filter": "thelmanews/th-chart-data-filter",
     "th-map-us": "thelmanews/th-map-us",
     "th-n-bar-chart": "thelmanews/th-n-bar-chart",
     "th-n-peak-chart": "thelmanews/th-n-peak-chart",
     "th-table-data": "thelmanews/th-table-data",
     "core-icon-button": "Polymer/core-icon-button#~0.5.0",
-    "core-icons": "Polymer/core-icons#0.3.4"
+    "core-icons": "Polymer/core-icons#0.3.4",
+    "core-icon": "Polymer/core-icon#0.3.4"
   },
   "resolutions": {
-    "platform": "master",
+    "platform": "^0.4.0",
     "polymer": "^0.4.0",
-    "core-component-page": "master",
-    "webcomponentsjs": "master"
+    "core-component-page": "^0.4.0",
+    "webcomponentsjs": "master",
+    "core-icon": "0.3.4",
+    "core-icons": "0.3.4",
+    "core-selection": "^0.5.0",
+    "core-collapse": "~0.5.0",
+    "core-selector": "0.3.4"
   }
 }
