@@ -19,7 +19,8 @@
     "th-map-function": "thelmanews/th-array-function",
     "th-map-us": "thelmanews/th-map-us",
     "th-n-bar-chart": "thelmanews/th-n-bar-chart",
-    "th-n-peak-chart": "thelmanews/th-n-peak-chart"
+    "th-n-peak-chart": "thelmanews/th-n-peak-chart",
+    "th-table-data": "thelmanews/th-table-data"
   },
   "resolutions": {
     "platform": "master",
