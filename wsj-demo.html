@@ -28,16 +28,16 @@
   <p>An example of using <code>&lt;th-connector></code>:</p>
 
   <th-connector animateOnInit="true">
-      
-      <th-csv url="../th-csv/assets/berlin.csv"></th-csv>
       <th-table-data></th-table-data>
+      <th-csv url="../th-csv/assets/berlin.csv"></th-csv>
+      
 
 
       <th-geocoder-firebase firebaseLocation="https://sweltering-fire-3844.firebaseio.com/" style="min-width: 150px"></th-geocoder-firebase>  
       <th-chart-data-filter></th-chart-data-filter>
       
-      <th-array-function></th-array-function>
       <!-- <th-array-function></th-array-function> -->
+      <th-array-function></th-array-function>
       
       
       <!-- <th-geocoder-firebase firebaseLocation="https://sweltering-fire-3844.firebaseio.com/" style="min-width: 150px"></th-geocoder-firebase>  -->
@@ -48,13 +48,6 @@
       <th-n-bar-chart chartHeight="400" chartWidth="400" animateOnInit="true"></th-n-bar-chart>  
   </th-connector>
 
-  <!-- 
-  th-table-data get list: http://en.wikipedia.org/wiki/List_of_Berlin_Wall_segments
-
-  th-array-function: 
-    var location = current.row.split(' ').slice(1).join(' ');
-    return {'Location': location};
-  --> 
 
 </body>
 </html>

@@ -14,6 +14,7 @@
   <script src="../platform/platform.js"></script>
   <link rel="import" href="th-connector.html">
   <link rel="import" href="../th-enigma/th-enigma.html">
+  <link rel="import" href="../th-array-function/th-array-function.html">
   <link rel="import" href="../th-map-us/th-map-us.html">
   <link rel="import" href="../th-table-data/th-table-data.html">
   <link rel="import" href="../th-n-bar-chart/th-n-bar-chart.html">
@@ -27,10 +28,22 @@
 
   <th-connector animateOnInit="true">
       <th-enigma></th-enigma>
-      <th-chart-data-filter></th-chart-data-filter>
+      <th-array-function></th-array-function>
+      <th-chart-data-filter></th-chart-data-filter><th-table-data></th-table-data>
       <th-n-bar-chart animateOnInit="true"></th-n-bar-chart>
       <th-map-us animateOnInit="true" chartWidth="300"></th-map-us>
   </th-connector>
+
+  <!--
+  var value = parseInt(current["2014 Q3"].replace('$','').replace(',',''));
+
+current.label = current["Metro"];
+current.value = parseInt(current["2014 Q3"].replace('$','').replace(',',''));
+current.display_value = current["2014 Q3"];
+
+return current;
+
+-->
 
 </body>
 </html>
