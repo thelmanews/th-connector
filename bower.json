@@ -8,6 +8,24 @@
     "polymer-ui-accordion": "PolymerLabs/polymer-ui-accordion#~0.3.0",
     "csv-preview": "~1.0.0",
     "core-input": "Polymer/core-input#~0.3.4",
-    "core-selector": "Polymer/core-selector#0.3.4"
+    "core-selector": "Polymer/core-selector#0.3.4",
+    "core-collapse": "Polymer/core-collapse#~0.5.0",
+    "core-icon-button": "Polymer/core-icon-button#~0.5.0",
+    "th-theme": "thelmanews/th-theme",
+    "th-mapbox": "thelmanews/th-mapbox",
+    "th-geocoder-firebase": "thelmanews/th-geocoder-firebase",
+    "thelma-meta-components": "thelmanews/th-csv",
+    "th-google-map": "thelmanews/th-google-map",
+    "th-map-function": "thelmanews/th-array-function",
+    "th-map-us": "thelmanews/th-map-us",
+    "th-n-bar-chart": "thelmanews/th-n-bar-chart",
+    "th-n-peak-chart": "thelmanews/th-n-peak-chart"
+  },
+  "resolutions": {
+    "platform": "master",
+    "core-icons": "^0.4.0",
+    "polymer": "^0.4.0",
+    "core-component-page": "master",
+    "webcomponentsjs": "master"
   }
 }
