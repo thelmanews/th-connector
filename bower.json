@@ -22,19 +22,23 @@
     "th-n-bar-chart": "thelmanews/th-n-bar-chart",
     "th-n-peak-chart": "thelmanews/th-n-peak-chart",
     "th-table-data": "thelmanews/th-table-data",
-    "core-icon-button": "Polymer/core-icon-button#~0.5.0",
-    "core-icons": "Polymer/core-icons#0.3.4",
-    "core-icon": "Polymer/core-icon#0.3.4"
+    "core-elements": "Polymer/core-elements#~0.5.1"
   },
   "resolutions": {
     "platform": "^0.4.0",
     "polymer": "^0.4.0",
     "core-component-page": "^0.4.0",
     "webcomponentsjs": "master",
-    "core-icon": "0.3.4",
-    "core-icons": "0.3.4",
+    "core-icon": "^0.4.0",
+    "core-icons": "^0.4.0",
     "core-selection": "^0.5.0",
-    "core-collapse": "~0.5.0",
-    "core-selector": "0.3.4"
+    "core-collapse": "~0.4.1",
+    "core-selector": "~0.4.1",
+    "core-iconset": "^0.4.0",
+    "core-meta": "^0.4.0",
+    "core-iconset-svg": "^0.4.0",
+    "sortable-table": "~0.9.1",
+    "core-icon-button": "~0.4.2",
+    "core-input": "~0.3.4"
   }
 }
