@@ -1,6 +1,8 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../core-collapse/core-collapse.html">
 <link rel="import" href="../core-icon-button/core-icon-button.html">
+<link rel="import" href="../core-icons/core-icons.html">
+<link rel="import" href="../core-icons/image-icons.html">
 <link rel="import" href="../th-theme/th-theme.html">
 
 <polymer-element name="th-connector" extend="d3-chart" attributes="">
@@ -254,7 +256,7 @@
 
                 <template repeat="{{connection, index in connections}}">  
                   <li class="connection">
-                    <core-icon icon="check-circle-blank" style="color:{{connection.source.color}};"></core-icon>
+                    <core-icon icon="image:lens" style="color:{{connection.source.color}};"></core-icon>
                     {{connection.source.name}} ({{connection.sourceAttr}}) 
                     <core-icon icon="arrow-forward"></core-icon> 
                     {{connection.target.name}} ({{connection.targetAttr}})
