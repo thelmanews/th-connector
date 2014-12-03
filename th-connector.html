@@ -222,11 +222,20 @@
         overflow: visible;
       }
 
+      .window {
+        width: 5px;
+        height: 5px;
+        background-color: black;
+      }
+
     </style>
     <div class="connectors">
     </div>
 
     <div id="container" on-dragover="{{allowDrop}}" on-drop="{{droppedInContainer}}">
+      <div id="window1" class="window"></div>
+
+            <div id="window2" style="margin-left: 100px" class="window"></div>
       
       <!-- Components and connector dots --> 
       <template repeat="{{el, index in elements}}">
@@ -251,6 +260,8 @@
           </div>
         </div>
       </template>
+
+
     </div>
 
     <!-- Connections -->
@@ -276,8 +287,12 @@
               </ul>
             </div>
         </core-collapse>
+
+
       </div>
   </template>
+
+  <script src="../jsPlumb/dist/js/dom.jsPlumb-1.7.2.js"></script>
 
   <script>
 
@@ -301,6 +316,56 @@
 
           self._updateFields();
           self.watchMutation();
+
+          var window1 = self.$.window1;
+          var window2 = self.$.window2;
+          console.log(window1);
+
+
+          // in order to make jsPlumb work with polymer add p.host!=undifined
+          //      // if p.host is present p is a shadow dom element
+          //       while (p != null && p != b && p.host!=undefined) {
+          //  to endpointAdded function (line 2450 in 1.7.2)
+
+          jsPlumb.ready(function() {
+              console.log('jsplum ready');
+
+              jsPlumb.importDefaults({
+                PaintStyle : {
+                  lineWidth: 2,
+                  strokeStyle: '#555'
+                },
+                DragOptions : { cursor: "crosshair" },
+                Endpoints : [ [ "Dot", { radius:1 } ], [ "Dot", { radius:1 } ] ],
+                EndpointStyles : [{ fillStyle:"#555" }, { fillStyle:"#555" }]
+              });
+              jsPlumb.setContainer(self.$.container);
+
+
+              var endpointOptions = { 
+                isSource:true, 
+                isTarget:true,
+                connector : "Straight",
+                connectorStyle: { lineWidth:2, strokeStyle:'#555' },
+                scope:"blueline",
+                dragAllowedWhenFull:false
+
+              }; 
+
+              jsPlumb.addEndpoint(window1, { uuid:"window1" }, endpointOptions );
+              jsPlumb.addEndpoint(window2, { uuid:"window2" }, endpointOptions );
+
+
+              jsPlumb.connect({
+                source: window1,
+                target: window2,
+              });
+
+          });
+
+          setTimeout(function() {
+            self.$.window2.style.marginLeft = '300px';
+          },5000)
 
 
           // self.$.src_component.addEventListener('core-select', function() {
@@ -502,7 +567,7 @@
 
           },
         checkForInputAttr: function(value){
-        console.log(Object.keys(value));
+        //console.log(Object.keys(value));
           return Object.keys(value).indexOf("input") > -1 ? true : false;
         },
         checkForOutputAttr: function(value){

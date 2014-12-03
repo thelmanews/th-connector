@@ -20,7 +20,8 @@
     "th-map-us": "thelmanews/th-map-us",
     "th-n-bar-chart": "thelmanews/th-n-bar-chart",
     "th-n-peak-chart": "thelmanews/th-n-peak-chart",
-    "th-table-data": "thelmanews/th-table-data"
+    "th-table-data": "thelmanews/th-table-data",
+    "jsPlumb": "~1.7.2"
   },
   "resolutions": {
     "polymer": "~0.5.1",
