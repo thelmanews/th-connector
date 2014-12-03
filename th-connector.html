@@ -222,11 +222,29 @@
         overflow: visible;
       }
 
+      #container {
+        position: relative;
+      }
+
+      svg {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 0;
+        padding: 0;
+      }
+
+
+
     </style>
     <div class="connectors">
     </div>
 
     <div id="container" on-dragover="{{allowDrop}}" on-drop="{{droppedInContainer}}">
+      <svg id="svg"></svg>
+
       
       <!-- Components and connector dots --> 
       <template repeat="{{el, index in elements}}">
@@ -454,8 +472,78 @@
             self.updateConnections();
           }
           console.log(self.elements);
+          self._drawConnections();
 
         },
+
+        _drawConnections: function() {
+          console.log('_drawConnections');
+
+          var self = this;
+
+          var containerOffsetX = 20;
+          var containerOffsetY = 149;
+
+
+
+          console.log(self.connections);
+
+          //clear all paths. since it is not done offten it is fine to do it in a not optimized way
+          self.$.svg.innetHTML = '';
+          
+          for (var i = 0; i < self.connections.length; i++) {
+            var conn = self.connections[i];
+            var srcEl = conn.source.element;
+            var targetEl = conn.target.element;
+            console.log(conn);
+
+            var srcRect = srcEl.getBoundingClientRect();
+            var targetRect = targetEl.getBoundingClientRect();
+            
+            // line
+            // var aLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            // aLine.setAttribute('x1', srcRect.left + srcRect.width + 30 - 20);
+            // aLine.setAttribute('y1', srcRect.top - 145);
+            // aLine.setAttribute('x2', targetRect.left -20);
+            // aLine.setAttribute('y2', targetRect.top -145);
+            // aLine.setAttribute('stroke', '#555');
+            // aLine.setAttribute('stroke-width', 2); 
+            
+            var startX = srcRect.left + srcRect.width + 30 - containerOffsetX;
+            var startY = srcRect.top - containerOffsetY;
+            var endX = targetRect.left -containerOffsetX;
+            var endY = targetRect.top -containerOffsetY;
+            self._addBezierPath(startX, startY, endX, endY ,70);
+            
+          }        
+
+        },
+
+        _addBezierPath: function(startX, startY, endX, endY, handleOffsetX) {
+
+            var aLine = document.createElementNS('http://www.w3.org/2000/svg', 'path'); 
+            var path = this._createBezierPath(startX, startY, endX, endY, handleOffsetX);
+
+            console.log(path);
+            aLine.setAttribute('d',path);
+            aLine.setAttribute('stroke', '#555');// conn.source.color);
+            aLine.setAttribute('fill', '#FFF');
+            
+
+            this.$.svg.appendChild(aLine);
+
+        },
+
+        _createBezierPath: function(startX, startY, endX, endY, handleOffsetX) {
+
+            
+            var path = "M"+parseInt(startX)+","+parseInt(startY)+
+                       " C"+parseInt(startX + handleOffsetX)+","+parseInt(startY)+
+                       " "+parseInt(endX - handleOffsetX)+","+parseInt(endY)+
+                       " "+parseInt(endX)+","+parseInt(endY);
+            return path;
+        },
+
         _deleteConnectionFromList: function(e, detail, selection){
           var self = this,
               targetEl = self.findElById(selection.classList[0]);
@@ -502,7 +590,7 @@
 
           },
         checkForInputAttr: function(value){
-        console.log(Object.keys(value));
+        //console.log(Object.keys(value));
           return Object.keys(value).indexOf("input") > -1 ? true : false;
         },
         checkForOutputAttr: function(value){
