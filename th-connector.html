@@ -254,7 +254,7 @@
           <div class="connectors-in" >
             <!-- Input -->
             <template if="{{el.element.publish | checkForInputAttr}}">
-              <li class="{{el.element.id}} inputMarker" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{_connectBubble}}" style="border-left-color:{{el.inputConnectedTo ? el.inputConnectedTo.color : defaultColor}};}}" draggable="true"></li>
+              <li class="{{el.element.id}} inputMarker" on-dragover="{{dragOver}}"  on-dragleave="{{dragLeave}}" on-drop="{{_connectBubble}}" style="border-left-color:{{el.inputConnectedTo ? el.inputConnectedTo.color : defaultColor}};}}" draggable="true"></li>
               
             </template>
 
@@ -519,7 +519,7 @@
 
         },
 
-        _addBezierPath: function(startX, startY, endX, endY, handleOffsetX) {
+        _addBezierPath: function(startX, startY, endX, endY, handleOffsetX, id) {
 
             var aLine = document.createElementNS('http://www.w3.org/2000/svg', 'path'); 
             var path = this._createBezierPath(startX, startY, endX, endY, handleOffsetX);
@@ -528,6 +528,9 @@
             aLine.setAttribute('d',path);
             aLine.setAttribute('stroke', '#555');// conn.source.color);
             aLine.setAttribute('fill', '#FFF');
+            if(id) {
+              aLine.setAttribute('id', id);
+            }
             
 
             this.$.svg.appendChild(aLine);
@@ -598,15 +601,34 @@
           return Object.keys(value).indexOf("output") > -1 ? true : false;
         },
         dragStart: function(e, detail, selection){
+
+
           this.draggedEl = selection;
+
+          // create temp bezier
+          this._addBezierPath( e.x - 10 , e.y - 159 , e.x -  10 , e.y - 159 , 70, 'temp_path');
+
+          this.startPointX = e.x - 10;
+          this.startPointY = e.y - 159;
           
           // selection.style.border = "3px solid "+this.colors.accents[selection.id];
         },
         drag: function(e, detail, selection){
-          // console.log(e);
+
+          //update temp bezier path
+
+          var tempPath = this.shadowRoot.querySelector('#temp_path');
+          console.log(e);
+          var newPath = this._createBezierPath( this.startPointX, this.startPointY , e.x -  10  , e.y - 159 , 70);
+          tempPath.setAttribute('d',newPath);
+          
         },
         dragEnd: function(e, detail, selection){
-          // console.log(e);
+          
+          //remove temp bezier path from dom 
+          var tempPath = this.shadowRoot.querySelector('#temp_path');
+          tempPath.parentNode.removeChild(tempPath);
+
         },
         dragOver: function(e, detail, selection){
           //selection.style.border = "3px solid "+this.colors.accents[this.draggedEl.id]; 
