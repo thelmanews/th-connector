@@ -254,7 +254,7 @@
           <div class="connectors-in" >
             <!-- Input -->
             <template if="{{el.element.publish | checkForInputAttr}}">
-              <li class="{{el.element.id}} inputMarker" on-dragover="{{dragOver}}"  on-dragleave="{{dragLeave}}" on-drop="{{_connectBubble}}" style="border-left-color:{{el.inputConnectedTo ? el.inputConnectedTo.color : defaultColor}};}}" draggable="true"></li>
+              <li class="{{el.element.id}} inputMarker" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{_connectBubble}}" style="border-left-color:{{el.inputConnectedTo ? el.inputConnectedTo.color : defaultColor}};}}" draggable="true"></li>
               
             </template>
 
@@ -263,7 +263,7 @@
           <content select="#{{el.element.id}}"></content>
           <div class="connectors-out" >
             <template if="{{el.element.publish | checkForOutputAttr}}">
-              <li id="{{index}}"  class="{{el.element.id}} outputMarker" on-dragStart="{{dragStart}}" on-drag="{{drag}}" on-dragEnd="{{dragEnd}}"  draggable="true" style="border-left-color: {{el.outputReady ? el.color : defaultColor}}; "></li>
+              <li id="{{index}}"  class="{{el.element.id}} outputMarker" on-dragStart="{{dragStartOutput}}" on-drag="{{drag}}" on-dragEnd="{{dragEnd}}"  draggable="true" style="border-left-color: {{el.outputReady ? el.color : defaultColor}}; "></li>
               
             </template>
           </div>
@@ -489,7 +489,7 @@
           console.log(self.connections);
 
           //clear all paths. since it is not done offten it is fine to do it in a not optimized way
-          self.$.svg.innetHTML = '';
+          self.$.svg.innerHTML = '';
           
           for (var i = 0; i < self.connections.length; i++) {
             var conn = self.connections[i];
@@ -572,6 +572,7 @@
               targetEl.inputConnectedTo = false;
           } 
           self.updateConnections();
+          self._drawConnections();
         },
         showControls: function(e) {
           console.log("show controls");
@@ -604,6 +605,11 @@
 
 
           this.draggedEl = selection;
+        },
+        dragStartOutput: function(e, detail, selection){
+
+
+          this.draggedEl = selection;
 
           // create temp bezier
           this._addBezierPath( e.x - 10 , e.y - 159 , e.x -  10 , e.y - 159 , 70, 'temp_path');
@@ -618,7 +624,6 @@
           //update temp bezier path
 
           var tempPath = this.shadowRoot.querySelector('#temp_path');
-          console.log(e);
           var newPath = this._createBezierPath( this.startPointX, this.startPointY , e.x -  10  , e.y - 159 , 70);
           tempPath.setAttribute('d',newPath);
           
