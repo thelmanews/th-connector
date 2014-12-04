@@ -257,7 +257,7 @@
       
       <!-- Components and connector dots --> 
       <template repeat="{{el, index in elements}}">
-        <div class="wrapper {{el.name}}" on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" draggable="true">
+        <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" draggable="true">
           <label>{{el.name}}</label>
           
           <div class="connectors-in" >
@@ -536,10 +536,10 @@
 
           var self = this;
 
-          var containerOffsetX = 20;
-          var containerOffsetY = 145;
 
-
+          var arrowOffsetY = 12;
+          var arrowOffsetX = 5;
+          var bezierCurveX = 70;  // the larger the value the smoother the curve
 
           console.log(self.connections);
 
@@ -547,28 +547,27 @@
           self.$.svg.innerHTML = '';
           
           for (var i = 0; i < self.connections.length; i++) {
+
             var conn = self.connections[i];
             var srcEl = conn.source.element;
             var targetEl = conn.target.element;
-            console.log(conn);
 
-            var srcRect = srcEl.getBoundingClientRect();
-            var targetRect = targetEl.getBoundingClientRect();
-            
-            // line
-            // var aLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            // aLine.setAttribute('x1', srcRect.left + srcRect.width + 30 - 20);
-            // aLine.setAttribute('y1', srcRect.top - 145);
-            // aLine.setAttribute('x2', targetRect.left -20);
-            // aLine.setAttribute('y2', targetRect.top -145);
-            // aLine.setAttribute('stroke', '#555');
-            // aLine.setAttribute('stroke-width', 2); 
-            
-            var startX = srcRect.left + srcRect.width + 30 - containerOffsetX;
-            var startY = srcRect.top - containerOffsetY;
-            var endX = targetRect.left -containerOffsetX;
-            var endY = targetRect.top -containerOffsetY;
-            var bezierCurveX = 70;  // the larger the value the smoother the curve
+            var srcWrapper = self.shadowRoot.querySelector('#wrapper-'+srcEl.id);
+            var targetWrapper = self.shadowRoot.querySelector('#wrapper-'+targetEl.id);
+
+            // var srcRect = srcEl.getBoundingClientRect();
+            // var targetRect = targetEl.getBoundingClientRect();
+
+            var srcRect = srcWrapper.getBoundingClientRect();
+            var targetRect = targetWrapper.getBoundingClientRect();
+
+            var svgRect = self.$.svg.getBoundingClientRect();
+
+
+            var startX = srcRect.right - svgRect.left + arrowOffsetX; //srcRect.left + srcRect.width + 30 - containerOffsetX;
+            var startY = srcRect.top - svgRect.top + arrowOffsetY;
+            var endX = targetRect.left  - svgRect.left - arrowOffsetX;
+            var endY = targetRect.top  - svgRect.top + arrowOffsetY;
             self._addBezierPath(startX, startY, endX, endY , bezierCurveX);
             
           }        
@@ -580,7 +579,7 @@
             var aLine = document.createElementNS('http://www.w3.org/2000/svg', 'path'); 
             var path = this._createBezierPath(startX, startY, endX, endY, handleOffsetX);
 
-            console.log(path);
+            if(!id) console.log(path);
             aLine.setAttribute('d',path);
             aLine.setAttribute('stroke', '#555');// conn.source.color);
             aLine.setAttribute('fill', 'none');
@@ -668,10 +667,17 @@
           this.draggedEl = selection;
 
           // create temp bezier
-          this._addBezierPath( e.x - 10 , e.y - 145 , e.x -  10 , e.y - 145 , 70, 'temp_path');
+          var svgRect = this.$.svg.getBoundingClientRect();
 
-          this.startPointX = e.x - 10;
-          this.startPointY = e.y - 145;
+          this.startPointX = e.x - svgRect.left;
+          this.startPointY = e.y - svgRect.top;
+          this.svgTop = svgRect.top;
+          this.svgLeft = svgRect.left;
+
+          console.log(this.startPointX , this.startPointY);
+
+          this._addBezierPath( this.startPointX , this.startPointY , this.startPointX , this.startPointY , 70, 'temp_path');
+
           
           // selection.style.border = "3px solid "+this.colors.accents[selection.id];
         },
@@ -680,7 +686,7 @@
           //update temp bezier path
 
           var tempPath = this.shadowRoot.querySelector('#temp_path');
-          var newPath = this._createBezierPath( this.startPointX, this.startPointY , e.x -  10  , e.y - 159 , 70);
+          var newPath = this._createBezierPath( this.startPointX, this.startPointY , e.x - this.svgLeft  , e.y - this.svgTop  , 70);
           tempPath.setAttribute('d',newPath);
           
         },
@@ -688,7 +694,9 @@
           
           //remove temp bezier path from dom 
           var tempPath = this.shadowRoot.querySelector('#temp_path');
-          tempPath.parentNode.removeChild(tempPath);
+          if(tempPath) {
+            tempPath.parentNode.removeChild(tempPath);
+          }
 
         },
         dragOver: function(e, detail, selection){
