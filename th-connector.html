@@ -12,6 +12,10 @@
       :host{
         font-size: 12px;
         font-family: open-sans, sans-serif;
+        display: block;
+            width: 100%;
+      height: 100%;
+
 
       } 
       #chartData_anchor1 {
@@ -110,7 +114,7 @@
       }
 
       ::content  .selected-src-element {
-        border: 3px solid #66CCFF;
+        border-left-color: #66CCFF;
         margin: 0;
 
         box-sizing:border-box;
@@ -118,7 +122,7 @@
         -webkit-box-sizing:border-box;
       }
       ::content  .selected-target-element {
-        border: 3px solid #00FF99  ;
+        border-left-color: #00FF99  ;
         margin: 0;
 
         box-sizing:border-box;
@@ -166,19 +170,23 @@
       .wrapper {
         border: 3px solid #eee;
         display: inline-block;
-        position: relative;
+        position: absolute;
         margin: 30px 20px;
         margin-left: 60px;
         min-height: 80px;
         background-color: white;
       }
 
-      .connectors-tab {
-        width: 40px;
-        margin-left: -45px;
+      .connectors-in {
         position: absolute;
-        top: 0;
-        text-align: center;
+        left: -15px;
+        top: 0px;
+      }
+
+      .connectors-out {
+        position: absolute;
+        right: -15px;
+        top: 0px;
       }
 
       .wrapper li {
@@ -190,19 +198,23 @@
 
 
       .inputMarker {
-        width: 24px;
-        height: 24px;
-        border: 3px solid #ddd;
-        border-radius: 12px;
-        box-sizing: border-box;
+          width: 0; 
+          height: 0; 
+          border-top: 8px solid transparent;
+          border-bottom: 8px solid transparent;
+  
+          border-left: 10px solid #555;
+          box-sizing: border-box;
       }
 
       .outputMarker {
-        width: 24px;
-        height: 24px;
-        border: 3px solid #ddd;
-        border-radius: 12px;
-        box-sizing: border-box;
+          width: 0; 
+          height: 0; 
+          border-top: 8px solid transparent;
+          border-bottom: 8px solid transparent;
+
+  
+          border-left: 10px solid #555;
       }
 
       .wrapper label{
@@ -214,31 +226,56 @@
         overflow: visible;
       }
 
+      #container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+
+      }
+
+      svg {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 0;
+        padding: 0;
+        z-index: 100;
+        pointer-events: none;
+      }
+
+
+
     </style>
     <div class="connectors">
     </div>
 
     <div id="container" on-dragover="{{allowDrop}}" on-drop="{{droppedInContainer}}">
+      <svg id="svg"></svg>
+
       
       <!-- Components and connector dots --> 
       <template repeat="{{el, index in elements}}">
-        <div class="wrapper {{el.name}}" on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" draggable="true">
+        <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" draggable="true">
           <label>{{el.name}}</label>
           
-          <div id="connectors" class="connectors-tab" >
+          <div class="connectors-in" >
             <!-- Input -->
             <template if="{{el.element.publish | checkForInputAttr}}">
-              <li class="{{el.element.id}} inputMarker" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{_connectBubble}}" style="background-color: {{el.inputConnectedTo ? el.inputConnectedTo.color : el.inputReady ? defaultColor : 'white'}}; border-color:{{el.inputConnectedTo ? el.inputConnectedTo.color : defaultColor}};}}" draggable="true"></li>
-              <li>Input</li>
+              <li class="{{el.element.id}} inputMarker" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{_connectBubble}}" style="border-left-color:{{el.inputConnectedTo ? el.inputConnectedTo.color : defaultColor}};}}" draggable="true"></li>
+              
             </template>
 
             <!-- Output -->
-            <template if="{{el.element.publish | checkForOutputAttr}}">
-              <li id="{{index}}"  class="{{el.element.id}} outputMarker" on-dragStart="{{dragStart}}" on-drag="{{drag}}" on-dragEnd="{{dragEnd}}"  draggable="true" style="border-color: {{el.outputReady ? el.color : defaultColor}}; background-color:white;"></li>
-              <li>Output</li>
-            </template>
           </div>
           <content select="#{{el.element.id}}"></content>
+          <div class="connectors-out" >
+            <template if="{{el.element.publish | checkForOutputAttr}}">
+              <li id="{{index}}"  class="{{el.element.id}} outputMarker" on-dragStart="{{dragStartOutput}}" on-drag="{{drag}}" on-dragEnd="{{dragEnd}}"  draggable="true" style="border-left-color: {{el.outputReady ? el.color : defaultColor}}; "></li>
+              
+            </template>
+          </div>
         </div>
       </template>
     </div>
@@ -286,11 +323,16 @@
           var self = this;
           self.showControls();
           // Set colors
-          self.defaultColor = '#ddd';
+          self.defaultColor = '#555';
           self.colors = self.getThemeColors();
 
           self._updateFields();
           self.watchMutation();
+
+
+          self.addEventListener('core-resize', function() {
+            self._drawConnections();
+          });
 
 
           // self.$.src_component.addEventListener('core-select', function() {
@@ -353,11 +395,12 @@
           self.elements = [];
 
           var components = self.querySelectorAll('*'); 
-          [].forEach.call(components, function(el) {
-              el.setAttribute('draggable',true); // Does this do anything?
-              el.addEventListener('dragstart',function(e) {
-                self.draggedEl = e.toElement;
-              });
+          [].forEach.call(components, function(el, i) {
+
+              // el.setAttribute('draggable',true); // Does this do anything?
+              // el.addEventListener('dragstart',function(e) {
+              //   self.draggedEl = e.toElement;
+              // });
 
               var elName = el.tagName.toLowerCase();
 
@@ -372,13 +415,49 @@
                                       inputReady: false
                                   });
               }
+
+
           
           });
+
+          setTimeout(function() {
+
+            var currentY = 0;
+            prevRowHeight = 0;
+            prevWidth = 0;
+
+            var wrappers = self.shadowRoot.querySelectorAll('.wrapper');
+            [].forEach.call(wrappers, function(el, i) {
+
+
+                if(!el.style.top || !el.style.left) {
+
+                  prevWidth = parseInt(window.getComputedStyle(el).width.replace('px',''));
+                  if(i%2 == 0) {
+                    currentY += prevRowHeight + 40;
+                    prevRowHeight = 0;
+                    prevWidth = 0;
+
+                  }
+                  var height = parseInt(window.getComputedStyle(el).height.replace('px',''));
+
+                  prevRowHeight = Math.max(prevRowHeight, height);
+                  el.style.top = currentY+'px';
+                  el.style.left = (prevWidth+ (prevWidth!==0 ? 150 : 0))+'px';
+                  el.style.zIndex = wrappers.length-i;
+
+
+                  
+
+                }
+
+            
+            });
+          }, 100);
 
           for (var i=0; i<self.elements.length; i++){
             self.elements[i].color = self.colors.accents[i];
           }
-          console.log(self.elements);
         },
 
         _displayFields: function(selector) {
@@ -413,7 +492,8 @@
         },
         _connectBubble: function(e, detail, selection){ 
           var self = this;
-          selection.style.border = "3px solid "+this.colors.accents[this.draggedEl.id];
+          //selection.style.border = "3px solid "+this.colors.accents[this.draggedEl.id];
+          selection.style.borderLeftColor = this.colors.accents[this.draggedEl.id];
 
           var sourceEl = self.findElById(self.draggedEl.classList[0])
           var targetEl = self.findElById(selection.classList[0])
@@ -422,7 +502,6 @@
           
         },
         _connectAttributes: function(source, sourceField, target, targetField) {
-          console.log("connect attributes");
           var self = this;
 
           if (source === target){ //if a bubble was dropped on itself
@@ -442,9 +521,78 @@
 
             self.updateConnections();
           }
-          console.log(self.elements);
+          self._drawConnections();
 
         },
+
+        _drawConnections: function() {
+
+          var self = this;
+
+
+          var arrowOffsetY = 12;
+          var arrowOffsetX = 5;
+          var bezierCurveX = 70;  // the larger the value the smoother the curve
+
+
+          //clear all paths. since it is not done offten it is fine to do it in a not optimized way
+          self.$.svg.innerHTML = '';
+          
+          for (var i = 0; i < self.connections.length; i++) {
+
+            var conn = self.connections[i];
+            var srcEl = conn.source.element;
+            var targetEl = conn.target.element;
+
+            var srcWrapper = self.shadowRoot.querySelector('#wrapper-'+srcEl.id);
+            var targetWrapper = self.shadowRoot.querySelector('#wrapper-'+targetEl.id);
+
+            // var srcRect = srcEl.getBoundingClientRect();
+            // var targetRect = targetEl.getBoundingClientRect();
+
+            var srcRect = srcWrapper.getBoundingClientRect();
+            var targetRect = targetWrapper.getBoundingClientRect();
+
+            var svgRect = self.$.svg.getBoundingClientRect();
+
+
+            var startX = srcRect.right - svgRect.left + arrowOffsetX; //srcRect.left + srcRect.width + 30 - containerOffsetX;
+            var startY = srcRect.top - svgRect.top + arrowOffsetY;
+            var endX = targetRect.left  - svgRect.left - arrowOffsetX;
+            var endY = targetRect.top  - svgRect.top + arrowOffsetY;
+            self._addBezierPath(startX, startY, endX, endY , bezierCurveX);
+            
+          }        
+
+        },
+
+        _addBezierPath: function(startX, startY, endX, endY, handleOffsetX, id) {
+
+            var aLine = document.createElementNS('http://www.w3.org/2000/svg', 'path'); 
+            var path = this._createBezierPath(startX, startY, endX, endY, handleOffsetX);
+
+            aLine.setAttribute('d',path);
+            aLine.setAttribute('stroke', '#555');// conn.source.color);
+            aLine.setAttribute('fill', 'none');
+            if(id) {
+              aLine.setAttribute('id', id);
+            }
+            
+
+            this.$.svg.appendChild(aLine);
+
+        },
+
+        _createBezierPath: function(startX, startY, endX, endY, handleOffsetX) {
+
+            
+            var path = "M"+parseInt(startX)+","+parseInt(startY)+
+                       " C"+parseInt(startX + handleOffsetX)+","+parseInt(startY)+
+                       " "+parseInt(endX - handleOffsetX)+","+parseInt(endY)+
+                       " "+parseInt(endX)+","+parseInt(endY);
+            return path;
+        },
+
         _deleteConnectionFromList: function(e, detail, selection){
           var self = this,
               targetEl = self.findElById(selection.classList[0]);
@@ -470,14 +618,13 @@
               targetEl.inputConnectedTo = false;
           } 
           self.updateConnections();
+          self._drawConnections();
         },
         showControls: function(e) {
-          console.log("show controls");
           this.$.ctrl_collapse.toggle();
         } ,
 
         watchMutation: function() {
-          console.log("watch mutation");
             var change = function() {
 
               this._updateFields();
@@ -491,26 +638,56 @@
 
           },
         checkForInputAttr: function(value){
-        console.log(Object.keys(value));
           return Object.keys(value).indexOf("input") > -1 ? true : false;
         },
         checkForOutputAttr: function(value){
-          // console.log(Object.keys(value));
           return Object.keys(value).indexOf("output") > -1 ? true : false;
         },
         dragStart: function(e, detail, selection){
+
+
           this.draggedEl = selection;
+        },
+        dragStartOutput: function(e, detail, selection){
+
+
+          this.draggedEl = selection;
+
+          // create temp bezier
+          var svgRect = this.$.svg.getBoundingClientRect();
+
+          this.startPointX = e.x - svgRect.left;
+          this.startPointY = e.y - svgRect.top;
+          this.svgTop = svgRect.top;
+          this.svgLeft = svgRect.left;
+
+          this._addBezierPath( this.startPointX , this.startPointY , this.startPointX , this.startPointY , 70, 'temp_path');
+
           
           // selection.style.border = "3px solid "+this.colors.accents[selection.id];
         },
         drag: function(e, detail, selection){
-          // console.log(e);
+
+          //update temp bezier path
+
+          var tempPath = this.shadowRoot.querySelector('#temp_path');
+          var newPath = this._createBezierPath( this.startPointX, this.startPointY , e.x - this.svgLeft  , e.y - this.svgTop  , 70);
+          tempPath.setAttribute('d',newPath);
+          
         },
         dragEnd: function(e, detail, selection){
-          // console.log(e);
+          
+          //remove temp bezier path from dom 
+          var tempPath = this.shadowRoot.querySelector('#temp_path');
+          if(tempPath) {
+            tempPath.parentNode.removeChild(tempPath);
+          }
+
         },
         dragOver: function(e, detail, selection){
-          selection.style.border = "3px solid "+this.colors.accents[this.draggedEl.id];  
+          //selection.style.border = "3px solid "+this.colors.accents[this.draggedEl.id]; 
+          selection.style.borderLeftColor = this.colors.accents[this.draggedEl.id];
+ 
           event.preventDefault(); // allows drop event on this element
 
         },
@@ -519,7 +696,9 @@
           event.preventDefault(); // allows drop event on this element
         },
         dragLeave: function(e, detail, selection){
-          selection.style.border = "3px solid "+this.defaultColor;
+          //selection.style.border = "3px solid "+this.defaultColor;
+          selection.style.borderLeftColor = this.defaultColor;
+
         },
         droppedInContainer: function(e, detail, selection){
           var self = this;
