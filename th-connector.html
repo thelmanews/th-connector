@@ -331,7 +331,6 @@
 
 
           self.addEventListener('core-resize', function() {
-            console.log('collapse');
             self._drawConnections();
           });
 
@@ -428,7 +427,6 @@
             prevWidth = 0;
 
             var wrappers = self.shadowRoot.querySelectorAll('.wrapper');
-            console.log(wrappers);
             [].forEach.call(wrappers, function(el, i) {
 
 
@@ -442,7 +440,6 @@
 
                   }
                   var height = parseInt(window.getComputedStyle(el).height.replace('px',''));
-                  console.log(prevWidth);
 
                   prevRowHeight = Math.max(prevRowHeight, height);
                   el.style.top = currentY+'px';
@@ -461,7 +458,6 @@
           for (var i=0; i<self.elements.length; i++){
             self.elements[i].color = self.colors.accents[i];
           }
-          console.log(self.elements);
         },
 
         _displayFields: function(selector) {
@@ -506,7 +502,6 @@
           
         },
         _connectAttributes: function(source, sourceField, target, targetField) {
-          console.log("connect attributes");
           var self = this;
 
           if (source === target){ //if a bubble was dropped on itself
@@ -526,13 +521,11 @@
 
             self.updateConnections();
           }
-          console.log(self.elements);
           self._drawConnections();
 
         },
 
         _drawConnections: function() {
-          console.log('_drawConnections');
 
           var self = this;
 
@@ -541,7 +534,6 @@
           var arrowOffsetX = 5;
           var bezierCurveX = 70;  // the larger the value the smoother the curve
 
-          console.log(self.connections);
 
           //clear all paths. since it is not done offten it is fine to do it in a not optimized way
           self.$.svg.innerHTML = '';
@@ -579,7 +571,6 @@
             var aLine = document.createElementNS('http://www.w3.org/2000/svg', 'path'); 
             var path = this._createBezierPath(startX, startY, endX, endY, handleOffsetX);
 
-            if(!id) console.log(path);
             aLine.setAttribute('d',path);
             aLine.setAttribute('stroke', '#555');// conn.source.color);
             aLine.setAttribute('fill', 'none');
@@ -630,12 +621,10 @@
           self._drawConnections();
         },
         showControls: function(e) {
-          console.log("show controls");
           this.$.ctrl_collapse.toggle();
         } ,
 
         watchMutation: function() {
-          console.log("watch mutation");
             var change = function() {
 
               this._updateFields();
@@ -649,11 +638,9 @@
 
           },
         checkForInputAttr: function(value){
-        //console.log(Object.keys(value));
           return Object.keys(value).indexOf("input") > -1 ? true : false;
         },
         checkForOutputAttr: function(value){
-          // console.log(Object.keys(value));
           return Object.keys(value).indexOf("output") > -1 ? true : false;
         },
         dragStart: function(e, detail, selection){
@@ -673,8 +660,6 @@
           this.startPointY = e.y - svgRect.top;
           this.svgTop = svgRect.top;
           this.svgLeft = svgRect.left;
-
-          console.log(this.startPointX , this.startPointY);
 
           this._addBezierPath( this.startPointX , this.startPointY , this.startPointX , this.startPointY , 70, 'temp_path');
 
