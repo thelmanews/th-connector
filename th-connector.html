@@ -212,9 +212,17 @@
           height: 0; 
           border-top: 8px solid transparent;
           border-bottom: 8px solid transparent;
-
-  
           border-left: 10px solid #555;
+      }
+
+      .final-result-buttons {
+        position: absolute;
+        right: -45px;
+        top: -10px;
+      }
+
+      .final-result-selected core-icon-button {
+        color: #52CC6A;
       }
 
       .wrapper label{
@@ -273,7 +281,14 @@
           <div class="connectors-out" >
             <template if="{{el.element.publish | checkForOutputAttr}}">
               <li id="{{index}}"  class="{{el.element.id}} outputMarker" on-dragStart="{{dragStartOutput}}" on-drag="{{drag}}" on-dragEnd="{{dragEnd}}"  draggable="true" style="border-left-color: {{el.outputReady ? el.color : defaultColor}}; "></li>
-              
+            </template>
+            
+          </div>
+          <div class="final-result-buttons">
+            <template if="{{el.element.publish | checkForNoOutputAttr}}">
+              <li id="{{index}}"  class="{{el.element.id}} checkmark"  draggable="true" on-click="{{setAsFinalResult}}" title="Set as final result">
+                <core-icon-button icon="check"></core-icon-button>
+              </li>
             </template>
           </div>
         </div>
@@ -643,6 +658,9 @@
         checkForOutputAttr: function(value){
           return Object.keys(value).indexOf("output") > -1 ? true : false;
         },
+        checkForNoOutputAttr: function(value){
+          return Object.keys(value).indexOf("output") > -1 ? false : true;
+        },
         dragStart: function(e, detail, selection){
 
 
@@ -794,6 +812,23 @@
           var uniqueId = elName + '-' + num;
           
           return uniqueId;
+        },
+        setAsFinalResult: function(e, detail, selection){
+          var self = this,
+              targetEl = self.findElById(selection.classList[0]).element,
+              checkmarks = self.shadowRoot.querySelectorAll('.checkmark');
+          
+          // Remove final result class on all elements
+          for(i=0;i<checkmarks.length;i++){
+            checkmarks[i].classList.remove('final-result-selected');
+          }
+          for(i=0;i<self.elements.length;i++){
+            self.elements[i].element.classList.remove('final-result');
+          }
+
+          // Add final result class only to selected element and button
+          selection.classList.add('final-result-selected'); 
+          targetEl.classList.add('final-result');
         }
       });
 
