@@ -3,9 +3,11 @@
 <link rel="import" href="../core-icon-button/core-icon-button.html">
 <link rel="import" href="../core-icons/core-icons.html">
 <link rel="import" href="../core-icons/image-icons.html">
+<link rel="import" href="../core-menu/core-menu.html">
+<link rel="import" href="../core-item/core-item.html">
 <link rel="import" href="../th-theme/th-theme.html">
 
-<polymer-element name="th-connector" extend="d3-chart" attributes="">
+<polymer-element name="th-connector" extend="d3-chart" attributes="componentList">
   <core-style ref="theme"></theme>
   <template>
     <style>
@@ -70,6 +72,7 @@
       }
       .connections {
         margin-top: 10px;
+        opacity: 0; /* TEMPORARILY HIDE */
       }
 
       .connections ul {
@@ -253,7 +256,29 @@
         pointer-events: none;
       }
 
+      #component-list {
+        position: absolute;
+        right: 0;
+        top: 50px;
+        height: 100%;
+        width: 200px;
+        border: 3px solid #eee;
+        box-sizing: border-box;
+      }
 
+      #component-list core-item {
+        font-size: 12px;
+        padding: 0px 10px;
+        cursor: pointer;
+      }
+
+      #component-list core-item:hover {
+        background-color: #eee;
+      }
+
+      .core-selected {
+       font-weight: normal;
+      }
 
     </style>
     <div class="connectors">
@@ -261,8 +286,14 @@
 
     <div id="container" on-dragover="{{allowDrop}}" on-drop="{{droppedInContainer}}">
       <svg id="svg"></svg>
+      <template if="{{componentList.length>0}}">
+        <core-menu id="component-list">
+          <template repeat="{{component in componentList}}">
+            <core-item class="{{component.name}}" on-click="{{addNewEl}}" label="{{component.friendly || component.name}}"></core-item>
+          </template>
+        </core-menu>
+      </template>
 
-      
       <!-- Components and connector dots --> 
       <template repeat="{{el, index in elements}}">
         <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" draggable="true">
@@ -333,7 +364,12 @@
         _targetPropertySelection: null,
         _connections: [], // retire?
         connections: [],
-
+        /**
+         * 'componentList' is an array of objects that is used to create a menu of components which can be added to th-connector
+         * @type {Array} 
+         * @example [{"name":"th-mapbox", "friendly":"Mapbox", "category":"Maps"}]
+         */
+        componentList: [],
         domReady: function() {
           var self = this;
           self.showControls();
@@ -829,6 +865,15 @@
           // Add final result class only to selected element and button
           selection.classList.add('final-result-selected'); 
           targetEl.classList.add('final-result');
+        },
+        addNewEl: function(e, detail, selection){
+          var self = this,
+              newElName = selection.classList[0],
+              newEl = "<"+newElName+"></"+newElName+">",
+              innerHTML = self.innerHTML + newEl;
+
+          self.innerHTML = innerHTML;
+
         }
       });
 
