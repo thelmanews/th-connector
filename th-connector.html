@@ -179,6 +179,17 @@
         min-height: 80px;
         background-color: white;
       }
+      /*
+      .wrapper [draggable] {
+        -moz-user-select: none;
+        -khtml-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
+        
+        -khtml-user-drag: element;
+        -webkit-user-drag: element;
+      }
+      */
 
       .connectors-in {
         position: absolute;
@@ -235,6 +246,7 @@
         padding: 0;
         font-size: 10pt;
         overflow: visible;
+        cursor: move;
       }
 
       #container {
@@ -284,7 +296,7 @@
     <div class="connectors">
     </div>
 
-    <div id="container" on-dragover="{{allowDrop}}" on-drop="{{droppedInContainer}}">
+    <div id="container" on-drop="{{droppedInContainer}}">
       <svg id="svg"></svg>
       <template if="{{componentList.length>0}}">
         <core-menu id="component-list">
@@ -296,7 +308,7 @@
 
       <!-- Components and connector dots --> 
       <template repeat="{{el, index in elements}}">
-        <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" draggable="true">
+        <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" on-dragStart="{{dragWrapperStart}}" on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" draggable="true">
           <label>{{el.name}}</label>
           
           <div class="connectors-in" >
@@ -699,13 +711,16 @@
         },
         dragStart: function(e, detail, selection){
 
-
           this.draggedEl = selection;
+          //to stop wrapper drag to be called
+          e.stopPropagation();
         },
         dragStartOutput: function(e, detail, selection){
 
 
           this.draggedEl = selection;
+          //to stop wrapper drag to be called
+          e.stopPropagation();
 
           // create temp bezier
           var svgRect = this.$.svg.getBoundingClientRect();
@@ -756,12 +771,42 @@
         },
         droppedInContainer: function(e, detail, selection){
           var self = this;
+
+
+          // for wrapper move. is it better to use dataTransfer instead of self.draggedEl for anchor as well? (below)
+          var dataTransfer = e.dataTransfer.getData('text/plain');
+
+
+          if(dataTransfer && dataTransfer.length>0) {
+            var dataSeg = dataTransfer.split(',')
+            var wrapper = self.shadowRoot.querySelector('#'+dataSeg[2]);
+            
+            
+            wrapper.style.left = (e.clientX + parseInt(dataSeg[0],10)) + 'px';
+            wrapper.style.top = (e.clientY + parseInt(dataSeg[1],10)) + 'px';
+
+            self._drawConnections();
+
+            event.preventDefault(); 
+            return false; 
+
+
+          }
           
-          if(self.draggedEl.classList.contains("inputMarker")){
+          if(self.draggedEl && self.draggedEl.classList.contains("inputMarker")){
             self._deleteConnectionFromBubble(e, detail, selection);
-          }else if (self.draggedEl.tagName != 'LI'){
+          }else if (self.draggedEl && self.draggedEl.tagName != 'LI'){
             // It's probably a component that got drag/dropped. Do something here.
           }
+        },
+
+        dragWrapperStart: function(e, details, selection) {
+
+          var style = window.getComputedStyle(event.target, null);
+          var offset_data = (parseInt(style.getPropertyValue("left"),10) - event.clientX) +
+                        ',' + (parseInt(style.getPropertyValue("top"),10) - event.clientY) +
+                        ',' + selection.id;
+          event.dataTransfer.setData("text/plain",offset_data);
         },
 
         getThemeColors: function(){
