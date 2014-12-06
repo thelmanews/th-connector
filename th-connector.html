@@ -269,7 +269,7 @@
       
       <!-- Components and connector dots --> 
       <template repeat="{{el, index in elements}}">
-        <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" on-dragStart="{{dragWrapper}}" on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" draggable="true">
+        <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" on-dragStart="{{dragWrapperStart}}" on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" draggable="true">
           <label>{{el.name}}</label>
           
           <div class="connectors-in" >
@@ -720,22 +720,21 @@
 
 
           // for wrapper move. is it better to use dataTransfer instead of self.draggedEl for anchor as well? (below)
-          var dataTransfer = e.dataTransfer.getData('text');
+          var dataTransfer = e.dataTransfer.getData('text/plain');
 
-          //console.log(dataTransfer);
 
           if(dataTransfer && dataTransfer.length>0) {
-            var wrapper = self.shadowRoot.querySelector('#'+dataTransfer);
-            console.log(window.getComputedStyle(wrapper));
-            console.log('current ',wrapper.style.left, wrapper.style.top);
-            console.log('layer ',e.layerX, e.layerY);
-            console.log('offset ',e.offsetX, e.offsetY);
-            wrapper.style.top = (e.layerY)+'px';
-            wrapper.style.left = (e.layerX-10)+'px';
+            var dataSeg = dataTransfer.split(',')
+            var wrapper = self.shadowRoot.querySelector('#'+dataSeg[2]);
+            
+            
+            wrapper.style.left = (e.clientX + parseInt(dataSeg[0],10)) + 'px';
+            wrapper.style.top = (e.clientY + parseInt(dataSeg[1],10)) + 'px';
 
             self._drawConnections();
 
-            //e.dataTransfer.setData('text', '');
+            event.preventDefault(); 
+            return false; 
 
 
           }
@@ -747,9 +746,13 @@
           }
         },
 
-        dragWrapper: function(e, details, selection) {
-          e.dataTransfer.setData('text', selection.id);
-          //selection.style.opacity = 0.1;
+        dragWrapperStart: function(e, details, selection) {
+
+          var style = window.getComputedStyle(event.target, null);
+          var offset_data = (parseInt(style.getPropertyValue("left"),10) - event.clientX) +
+                        ',' + (parseInt(style.getPropertyValue("top"),10) - event.clientY) +
+                        ',' + selection.id;
+          event.dataTransfer.setData("text/plain",offset_data);
         },
 
         getThemeColors: function(){
