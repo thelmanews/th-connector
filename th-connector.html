@@ -308,13 +308,13 @@
 
       <!-- Components and connector dots --> 
       <template repeat="{{el, index in elements}}">
-        <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" on-dragStart="{{dragWrapperStart}}" on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" draggable="true">
+        <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" on-dragStart="{{dragStartWrapper}}" on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" draggable="true">
           <label>{{el.name}}</label>
           
           <div class="connectors-in" >
             <!-- Input -->
             <template if="{{el.element.publish | checkForInputAttr}}">
-              <li class="{{el.element.id}} inputMarker" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{_connectBubble}}" style="border-left-color:{{el.inputConnectedTo ? el.inputConnectedTo.color : defaultColor}};}}" draggable="true"></li>
+              <li class="{{el.element.id}} inputMarker" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{_connectBubble}}" on-dragEnd="{{droppedInContainer}}" style="border-left-color:{{el.inputConnectedTo ? el.inputConnectedTo.color : defaultColor}};}}" draggable="true"></li>
               
             </template>
 
@@ -556,6 +556,7 @@
         _connectBubble: function(e, detail, selection){ 
           var self = this;
           //selection.style.border = "3px solid "+this.colors.accents[this.draggedEl.id];
+          
           selection.style.borderLeftColor = this.colors.accents[this.draggedEl.id];
 
           var sourceEl = self.findElById(self.draggedEl.classList[0])
@@ -711,11 +712,14 @@
         },
         dragStart: function(e, detail, selection){
 
+
+
           this.draggedEl = selection;
           //to stop wrapper drag to be called
           e.stopPropagation();
         },
         dragStartOutput: function(e, detail, selection){
+
 
 
           this.draggedEl = selection;
@@ -760,10 +764,12 @@
           event.preventDefault(); // allows drop event on this element
 
         },
+        /*
         allowDrop: function(e,detail,selection){
          
           event.preventDefault(); // allows drop event on this element
         },
+        */
         dragLeave: function(e, detail, selection){
           //selection.style.border = "3px solid "+this.defaultColor;
           selection.style.borderLeftColor = this.defaultColor;
@@ -800,7 +806,7 @@
           }
         },
 
-        dragWrapperStart: function(e, details, selection) {
+        dragStartWrapper: function(e, details, selection) {
 
           var style = window.getComputedStyle(event.target, null);
           var offset_data = (parseInt(style.getPropertyValue("left"),10) - event.clientX) +
@@ -914,10 +920,13 @@
         addNewEl: function(e, detail, selection){
           var self = this,
               newElName = selection.classList[0],
-              newEl = "<"+newElName+"></"+newElName+">",
-              innerHTML = self.innerHTML + newEl;
+              //newEl = "<"+newElName+"></"+newElName+">";
+              //innerHTML = self.innerHTML + newEl;
+              newEl = document.createElement(newElName);
+              
+              self.appendChild(newEl);
 
-          self.innerHTML = innerHTML;
+             //self.innerHTML = innerHTML;
 
         }
       });
