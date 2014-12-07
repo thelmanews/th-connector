@@ -918,15 +918,13 @@
           targetEl.classList.add('final-result');
         },
         addNewEl: function(e, detail, selection){
-          var self = this,
+         var self = this,
               newElName = selection.classList[0],
-              //newEl = "<"+newElName+"></"+newElName+">";
-              //innerHTML = self.innerHTML + newEl;
-              newEl = document.createElement(newElName);
-              
-              self.appendChild(newEl);
+              newEl = "<"+newElName+"></"+newElName+">",
+              innerHTML = self.innerHTML + newEl;
 
-             //self.innerHTML = innerHTML;
+          self.innerHTML = innerHTML;
+
 
         }
       });
