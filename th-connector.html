@@ -920,10 +920,13 @@
         addNewEl: function(e, detail, selection){
          var self = this,
               newElName = selection.classList[0],
-              newEl = "<"+newElName+"></"+newElName+">",
-              innerHTML = self.innerHTML + newEl;
+              //newEl = "<"+newElName+"></"+newElName+">";
+              //innerHTML = self.innerHTML + newEl;
+              newEl = document.createElement(newElName);
+              
+              self.appendChild(newEl);
+             //self.innerHTML = innerHTML;
 
-          self.innerHTML = innerHTML;
 
 
         }
