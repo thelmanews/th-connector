@@ -829,8 +829,9 @@
         },
         dragOver: function(e, detail, selection){
           //selection.style.border = "3px solid "+this.colors.accents[this.draggedEl.id]; 
-          selection.style.borderLeftColor = this.colors.accents[this.draggedEl.id];
- 
+          if(this.draggedEl) {
+            selection.style.borderLeftColor = this.colors.accents[this.draggedEl.id];
+          } 
           event.preventDefault(); // allows drop event on this element
 
         },
