@@ -71,11 +71,13 @@
 </div>
 
   <th-connector animateOnInit="true">
-      <th-table-data></th-table-data>
-      <th-array-function style="min-width: 150px;"></th-array-function>
+       <th-table-data></th-table-data>
       <th-geocoder-firebase firebaseLocation="https://sweltering-fire-3844.firebaseio.com/" style="min-width: 150px"></th-geocoder-firebase>
+       <!--
       <th-chart-data-filter style="min-width: 150px"></th-chart-data-filter>
-      <th-google-map fitToMarkers width="375" height="400">  </th-google-map>
+      <th-array-function style="min-width: 150px;"></th-array-function>
+
+      <th-google-map fitToMarkers width="375" height="400">  </th-google-map>-->
       <th-mapbox width="375" height="400" accessToken="pk.eyJ1IjoidGhlbG1hIiwiYSI6Ikd3RUlsTTQifQ.i6bojdSBKd6JHENLKsRjTA" mapId="examples.map-i87786ca" geolocation="false" showSwipeBar="false" animateOnInit="true" startingLat="38.8922" startingLng="-77.0348"></th-mapbox>
       <!--<th-n-bar-chart  chartHeight="400" chartWidth="375" animateOnInit="true"></th-n-bar-chart> --> 
   </th-connector>
@@ -86,7 +88,20 @@
       console.log('ready');
 
       var connector = document.querySelector('th-connector');
-      connector.componentList = [{name:'th-csv', friendly: 'CSV loader'},{name: 'th-enigma', friendly: 'Enigma data loader'}];
+      connector.componentList = [
+                                  {name:'th-csv', friendly: 'CSV Loader'},
+                                  {name: 'th-enigma', friendly: 'Enigma Data Loader'},
+                                  {name:'th-table-data', friendly: 'HTML Table Data Loader'},
+
+                                  {name:'th-array-function', friendly: 'Map/Reduce/Filter Functions'},
+                                  {name:'th-geocoder-firebase', friendly: 'Geocode Data'},
+                                  {name:'th-chart-data-filter', friendly: 'Convert Data to Chart Format'},
+
+                                  {name:'th-google-map', friendly: 'Google Map'},
+                                  {name:'th-n-bar-chart', friendly: 'Bar Chart'},
+
+
+                                 ];
     });
 </script>
 </html>
