@@ -291,6 +291,18 @@
       .core-selected {
        font-weight: normal;
       }
+      .deleteEl {
+        width: 20px;
+        height: 20px;
+        float: right;
+        display: inline-block;
+        position: absolute;
+        top: -15px;
+        right: -10px;
+        cursor: pointer;
+
+
+      }
 
     </style>
     <div class="connectors">
@@ -301,7 +313,7 @@
       <template if="{{componentList.length>0}}">
         <core-menu id="component-list">
           <template repeat="{{component in componentList}}">
-            <core-item class="{{component.name}}" on-click="{{addNewEl}}" label="{{component.friendly || component.name}}"></core-item>
+            <core-item class="{{component.name}}" on-dragStart="{{dragStartList}}" draggable="true" label="{{component.friendly || component.name}}"></core-item>
           </template>
         </core-menu>
       </template>
@@ -310,7 +322,9 @@
       <template repeat="{{el, index in elements}}">
         <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" on-dragStart="{{dragStartWrapper}}" on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" draggable="true">
           <label>{{el.name}}</label>
-          
+          <!--<core-icon-button icon="clear" class="deleteEl {{el.element.id}}" on-click="{{_deleteElement}}"></core-icon-button> -->
+          <div  class="deleteEl {{el.element.id}}" on-click="{{_deleteElement}}">X</div>
+           
           <div class="connectors-in" >
             <!-- Input -->
             <template if="{{el.element.publish | checkForInputAttr}}">
@@ -390,6 +404,9 @@
           self.colors = self.getThemeColors();
 
           self._updateFields();
+
+          self._arrangeComponents();
+
           self.watchMutation();
 
 
@@ -455,7 +472,9 @@
           var self = this;
           var boringTags = ['div','ul','li','span','th-editor','br'];
 
-          self.elements = [];
+          //TODO don't recreate wrappers!!!!!
+
+          //self.elements = [];
 
           var components = self.querySelectorAll('*'); 
           [].forEach.call(components, function(el, i) {
@@ -464,6 +483,15 @@
               // el.addEventListener('dragstart',function(e) {
               //   self.draggedEl = e.toElement;
               // });
+              
+              // if element already processed, ignore...
+              var alreadyInElements = self.elements.filter(function(item) {
+                return el.id && el.id===item.id;
+              });
+              if(alreadyInElements.length>0) {
+                return;
+              }
+
 
               var elName = el.tagName.toLowerCase();
 
@@ -473,15 +501,44 @@
               var index=boringTags.indexOf(elName);
               if(index<0) {
                 self.elements.push({  element: el, 
+                                      id: el.id,
                                       name: elName, 
                                       outputReady: false,
                                       inputReady: false
                                   });
               }
 
+              var droppedTop = el.getAttribute('_top'),
+                  droppedLeft = el.getAttribute('_left')
+
+
+              if(droppedTop && droppedLeft) {
+                  //wait until the wrapper is created...
+                  setTimeout(function() { 
+
+                  var wrapper = self.shadowRoot.querySelector('#wrapper-'+el.id);
+                  wrapper.style.top = droppedTop+'px';
+                  wrapper.style.left = droppedLeft+'px';
+                },10 );
+
+              }
+
 
           
           });
+
+          for (var i=0; i<self.elements.length; i++){
+            self.elements[i].color = self.colors.accents[i];
+          }
+
+
+
+
+        },
+
+        _arrangeComponents: function() {
+
+          var self = this;
 
           setTimeout(function() {
 
@@ -518,9 +575,6 @@
             });
           }, 100);
 
-          for (var i=0; i<self.elements.length; i++){
-            self.elements[i].color = self.colors.accents[i];
-          }
         },
 
         _displayFields: function(selector) {
@@ -701,6 +755,10 @@
 
 
           },
+
+          _deleteElement: function() {
+
+          },
         checkForInputAttr: function(value){
           return Object.keys(value).indexOf("input") > -1 ? true : false;
         },
@@ -757,6 +815,10 @@
           }
 
         },
+        dragStartList: function(e, detail, selection) {
+           event.dataTransfer.setData("text/plain",selection.classList[0]);
+
+        },
         dragOver: function(e, detail, selection){
           //selection.style.border = "3px solid "+this.colors.accents[this.draggedEl.id]; 
           selection.style.borderLeftColor = this.colors.accents[this.draggedEl.id];
@@ -778,13 +840,23 @@
         droppedInContainer: function(e, detail, selection){
           var self = this;
 
-
+          console.log('dropeed in container');
           // for wrapper move. is it better to use dataTransfer instead of self.draggedEl for anchor as well? (below)
           var dataTransfer = e.dataTransfer.getData('text/plain');
 
 
           if(dataTransfer && dataTransfer.length>0) {
-            var dataSeg = dataTransfer.split(',')
+            var dataSeg = dataTransfer.split(',');
+
+            
+            //element from list dragged
+            if(dataSeg.length==1) {
+              self.addNewElToConnector(dataSeg[0], e.offsetX, e.offsetY);
+
+              return;
+            }
+
+            // wrapped dragged
             var wrapper = self.shadowRoot.querySelector('#'+dataSeg[2]);
             
             
@@ -799,6 +871,7 @@
 
           }
           
+          //input marker dragged (disconnect)
           if(self.draggedEl && self.draggedEl.classList.contains("inputMarker")){
             self._deleteConnectionFromBubble(e, detail, selection);
           }else if (self.draggedEl && self.draggedEl.tagName != 'LI'){
@@ -808,9 +881,13 @@
 
         dragStartWrapper: function(e, details, selection) {
 
-          var style = window.getComputedStyle(event.target, null);
-          var offset_data = (parseInt(style.getPropertyValue("left"),10) - event.clientX) +
-                        ',' + (parseInt(style.getPropertyValue("top"),10) - event.clientY) +
+          var style = window.getComputedStyle(event.target, null),
+              left = parseInt(style.getPropertyValue("left"),10),
+              top = parseInt(style.getPropertyValue("top"),10);
+
+          //if position left/top doens't exist 0 instead of NaN
+          var offset_data = ((isNaN(left) ? 0 : left) - event.clientX) +
+                        ',' + ((isNaN(top) ? 0 : top) - event.clientY) +
                         ',' + selection.id;
           event.dataTransfer.setData("text/plain",offset_data);
         },
@@ -917,12 +994,14 @@
           selection.classList.add('final-result-selected'); 
           targetEl.classList.add('final-result');
         },
-        addNewEl: function(e, detail, selection){
+        addNewElToConnector: function(newElName, left, top){
           var self = this,
-              newElName = selection.classList[0],
-              //newEl = "<"+newElName+"></"+newElName+">";
-              //innerHTML = self.innerHTML + newEl;
-              newEl = document.createElement(newElName);
+              
+               newEl = document.createElement(newElName);
+
+               newEl.setAttribute('_top', top);
+               newEl.setAttribute('_left', left);
+
               
               self.appendChild(newEl);
 
