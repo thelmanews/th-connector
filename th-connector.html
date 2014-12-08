@@ -313,7 +313,7 @@
       <template if="{{componentList.length>0}}">
         <core-menu id="component-list">
           <template repeat="{{component in componentList}}">
-            <core-item class="{{component.name}}" on-dragStart="{{dragStartList}}" draggable="true" label="{{component.friendly || component.name}}"></core-item>
+            <core-item class="{{component.name}}" on-dragStart="{{dragStartList}}" on-click="{{listClicked}}" draggable="true" label="{{component.friendly || component.name}}"></core-item>
           </template>
         </core-menu>
       </template>
@@ -819,6 +819,14 @@
            event.dataTransfer.setData("text/plain",selection.classList[0]);
 
         },
+
+        listClicked: function(e, detail, selection) {
+          console.log(selection, e);
+          // better way to position them?
+          var x = e.offsetX + 200 + Math.round(Math.random()*400),
+              y = e.offsetY + 200 + Math.round(Math.random()*400);
+          this.addNewElToConnector(selection.classList[0], x, y);
+        },
         dragOver: function(e, detail, selection){
           //selection.style.border = "3px solid "+this.colors.accents[this.draggedEl.id]; 
           selection.style.borderLeftColor = this.colors.accents[this.draggedEl.id];
@@ -995,8 +1003,12 @@
           targetEl.classList.add('final-result');
         },
         addNewElToConnector: function(newElName, left, top){
+
+              console.log(left, top);
+
           var self = this,
               
+
                newEl = document.createElement(newElName);
 
                newEl.setAttribute('_top', top);
