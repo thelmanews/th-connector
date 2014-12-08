@@ -308,7 +308,7 @@
     <div class="connectors">
     </div>
 
-    <div id="container" on-drop="{{droppedInContainer}}">
+    <div id="container" on-dragover="{{dragOver}}" on-drop="{{droppedInContainer}}">
       <svg id="svg"></svg>
       <template if="{{componentList.length>0}}">
         <core-menu id="component-list">
@@ -816,7 +816,7 @@
 
         },
         dragStartList: function(e, detail, selection) {
-           event.dataTransfer.setData("text/plain",selection.classList[0]);
+           e.dataTransfer.setData("text/plain",selection.classList[0]);
 
         },
 
@@ -829,15 +829,16 @@
         },
         dragOver: function(e, detail, selection){
           //selection.style.border = "3px solid "+this.colors.accents[this.draggedEl.id]; 
-          selection.style.borderLeftColor = this.colors.accents[this.draggedEl.id];
- 
-          event.preventDefault(); // allows drop event on this element
+        if(this.draggedEl) {	
+ 	   selection.style.borderLeftColor = this.colors.accents[this.draggedEl.id];
+         }
+          e.preventDefault(); // allows drop event on this element
 
         },
         /*
         allowDrop: function(e,detail,selection){
          
-          event.preventDefault(); // allows drop event on this element
+          e.preventDefault(); // allows drop event on this element
         },
         */
         dragLeave: function(e, detail, selection){
@@ -873,7 +874,7 @@
 
             self._drawConnections();
 
-            event.preventDefault(); 
+            e.preventDefault(); 
             return false; 
 
 
@@ -889,15 +890,15 @@
 
         dragStartWrapper: function(e, details, selection) {
 
-          var style = window.getComputedStyle(event.target, null),
+          var style = window.getComputedStyle(e.target, null),
               left = parseInt(style.getPropertyValue("left"),10),
               top = parseInt(style.getPropertyValue("top"),10);
 
           //if position left/top doens't exist 0 instead of NaN
-          var offset_data = ((isNaN(left) ? 0 : left) - event.clientX) +
-                        ',' + ((isNaN(top) ? 0 : top) - event.clientY) +
+          var offset_data = ((isNaN(left) ? 0 : left) - e.clientX) +
+                        ',' + ((isNaN(top) ? 0 : top) - e.clientY) +
                         ',' + selection.id;
-          event.dataTransfer.setData("text/plain",offset_data);
+          e.dataTransfer.setData("text/plain",offset_data);
         },
 
         getThemeColors: function(){
