@@ -292,16 +292,24 @@
        font-weight: normal;
       }
       .deleteEl {
-        width: 20px;
-        height: 20px;
+
+        width: 12px;
+        height: 12px;
         float: right;
         display: inline-block;
         position: absolute;
-        top: -15px;
-        right: -10px;
+        top: -20px;
+        right: -3px;
         cursor: pointer;
+        vertical-align: middle;
+        padding: 1px;
+        text-align: center;
 
 
+      }
+      .deleteEl:hover {
+        border: 1px solid #eee;
+        border-radius: 2px;
       }
 
     </style>
@@ -319,11 +327,11 @@
       </template>
 
       <!-- Components and connector dots --> 
-      <template repeat="{{el, index in elements}}">
+      <template repeat="{{el, index in _elements}}">
         <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" on-dragStart="{{dragStartWrapper}}" on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" draggable="true">
           <label>{{el.name}}</label>
           <!--<core-icon-button icon="clear" class="deleteEl {{el.element.id}}" on-click="{{_deleteElement}}"></core-icon-button> -->
-          <div  class="deleteEl {{el.element.id}}" on-click="{{_deleteElement}}">X</div>
+          <div  class="deleteEl" component_id="{{el.element.id}}" on-click="{{_deleteElement}}">X</div>
            
           <div class="connectors-in" >
             <!-- Input -->
@@ -354,16 +362,16 @@
 
     <!-- Connections -->
       <div class="connections">
-        <span class="elTitle">{{connections.length}} Connections</span>
+        <span class="elTitle">{{_connections.length}} Connections</span>
         <core-icon-button icon="view-list" on-click="{{showControls}}"></core-icon-button>
         <core-collapse id="ctrl_collapse">
             <div class="connection-list">
               <ul>
-                <template if="{{!connections || connections.length < 1}}"> 
+                <template if="{{!_connections || _connections.length < 1}}"> 
                   <li>No connections. To make a connection, drag the bubble of one component over another.</li> 
                 </template>
 
-                <template repeat="{{connection, index in connections}}">  
+                <template repeat="{{connection, index in _connections}}">  
                   <li class="connection">
                     <core-icon icon="image:lens" style="color:{{connection.source.color}};"></core-icon>
                     {{connection.source.name}} ({{connection.sourceAttr}}) 
@@ -381,15 +389,15 @@
   <script>
 
       Polymer('th-connector', {
-        elements: [],
+        _elements: [],
         _srcAttrs: [],
         _targetAttrs: [],
         _srcElementSelection: null,
         _srcPropertySelection: null,
         _targetElementSelection: null,
         _targetPropertySelection: null,
-        _connections: [], // retire?
-        connections: [],
+        _connections: [], 
+        //connections: [],
         /**
          * 'componentList' is an array of objects that is used to create a menu of components which can be added to th-connector
          * @type {Array} 
@@ -474,7 +482,7 @@
 
           //TODO don't recreate wrappers!!!!!
 
-          //self.elements = [];
+          //self._elements = [];
 
           var components = self.querySelectorAll('*'); 
           [].forEach.call(components, function(el, i) {
@@ -485,7 +493,7 @@
               // });
               
               // if element already processed, ignore...
-              var alreadyInElements = self.elements.filter(function(item) {
+              var alreadyInElements = self._elements.filter(function(item) {
                 return el.id && el.id===item.id;
               });
               if(alreadyInElements.length>0) {
@@ -500,7 +508,7 @@
 
               var index=boringTags.indexOf(elName);
               if(index<0) {
-                self.elements.push({  element: el, 
+                self._elements.push({  element: el, 
                                       id: el.id,
                                       name: elName, 
                                       outputReady: false,
@@ -527,8 +535,8 @@
           
           });
 
-          for (var i=0; i<self.elements.length; i++){
-            self.elements[i].color = self.colors.accents[i];
+          for (var i=0; i<self._elements.length; i++){
+            self._elements[i].color = self.colors.accents[i];
           }
 
 
@@ -598,7 +606,7 @@
         },
         updateConnections: function(){
           var self = this;
-          self.connections = self.elements.filter(function(el){ return el.inputConnectedTo}).map(function(el){
+          self._connections = self._elements.filter(function(el){ return el.inputConnectedTo}).map(function(el){
               return { 
                 target: el,
                 targetAttr: 'input',
@@ -655,10 +663,12 @@
 
           //clear all paths. since it is not done offten it is fine to do it in a not optimized way
           self.$.svg.innerHTML = '';
-          
-          for (var i = 0; i < self.connections.length; i++) {
 
-            var conn = self.connections[i];
+          console.log('connections to draw', self._connections);
+          
+          for (var i = 0; i < self._connections.length; i++) {
+
+            var conn = self._connections[i];
             var srcEl = conn.source.element;
             var targetEl = conn.target.element;
 
@@ -756,9 +766,49 @@
 
           },
 
-          _deleteElement: function() {
+        _deleteElement: function(e) {
 
-          },
+          if(confirm('Do you want to remove this element from the sketch?')) {
+
+            var self = this;
+            var compId = e.target.getAttribute('component_id');
+            var ebmededEl = self.querySelector('#'+compId);
+            var elInArray = self.findElById(compId);
+
+            //remove all connections
+            self.removeAllConnectionsFromElement(compId)
+
+            // remove element from elements array (which removes it from the shadowDOM)
+            var filteredEls = self._elements.filter(function(el) {
+                return el.element.id!==compId;
+            });
+            self._elements = filteredEls;
+
+            // remove elements from th-connector 
+            self.removeChild(ebmededEl);
+          }
+
+
+        },
+
+        removeAllConnectionsFromElement: function(elId) {
+
+          var self = this;
+          var goodConnections = self._connections.filter(function (conn, index) {
+            
+            //filter if element is source or target of a connection
+            return !(conn.source.id===elId || conn.target.id === elId)
+             
+          });
+          console.log('goods',goodConnections);
+
+          self._connections = goodConnections;
+
+          self._drawConnections();
+
+
+        },
+
         checkForInputAttr: function(value){
           return Object.keys(value).indexOf("input") > -1 ? true : false;
         },
@@ -959,7 +1009,7 @@
         },
         findElByName: function(name){
           var self = this;
-          element = self.elements.filter(function(el){
+          element = self._elements.filter(function(el){
             return el.name === name;
           })[0];
 
@@ -967,7 +1017,7 @@
         },        
         findElById: function(id){
           var self = this;
-          element = self.elements.filter(function(el){
+          element = self._elements.filter(function(el){
             return el.element.id === id;
           })[0];
 
@@ -976,7 +1026,7 @@
         generateUniqueId: function(elName){
           var self = this;
           var num = 0;
-          var tagsWithSameName = self.elements.filter(function(elem){return elem.name == elName});
+          var tagsWithSameName = self._elements.filter(function(elem){return elem.name == elName});
           
           if(tagsWithSameName){
             num+= tagsWithSameName.length;
@@ -995,8 +1045,8 @@
           for(i=0;i<checkmarks.length;i++){
             checkmarks[i].classList.remove('final-result-selected');
           }
-          for(i=0;i<self.elements.length;i++){
-            self.elements[i].element.classList.remove('final-result');
+          for(i=0;i<self._elements.length;i++){
+            self._elements[i].element.classList.remove('final-result');
           }
 
           // Add final result class only to selected element and button
@@ -1005,7 +1055,6 @@
         },
         addNewElToConnector: function(newElName, left, top){
 
-              console.log(left, top);
 
           var self = this,
               
