@@ -37,7 +37,7 @@
           <div class="connectors-in" >
             <!-- Input -->
             <template if="{{el.element.publish | checkForInputAttr}}">
-              <li class="{{el.element.id}} inputMarker" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{_connectBubble}}" on-dragEnd="{{droppedInContainer}}" style="border-left-color:{{el.inputConnectedTo ? el.inputConnectedTo.color : defaultColor}};}}" draggable="true"></li>
+              <li class="{{el.element.id}} inputMarker" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{_connectBubble}}" on-dragEnd="{{droppedInContainer}}" draggable="true"></li>
               
             </template>
 
@@ -322,6 +322,7 @@
           return attrsObj;
           
         },
+        /*
         updateConnections: function(){
           var self = this;
           self._connections = self._elements.filter(function(el){ return el.inputConnectedTo}).map(function(el){
@@ -333,6 +334,7 @@
               }
           })
         },
+        */
         _connectBubble: function(e, detail, selection){ 
           var self = this;
           //selection.style.border = "3px solid "+this.colors.accents[this.draggedEl.id];
@@ -361,12 +363,26 @@
         _connectAttributes: function(source, sourceField, target, targetField) {
           var self = this;
 
+          //find the index of connection which has the same target
+          var connWithSameTargetIndex = self._connections.reduce(function(value, conn, index) {
+              if (conn.target.id===target.id) {
+                return index;
+              }
+
+          }, -1);
+          // and remove it from connections array
+          if(connWithSameTargetIndex>-1) {
+            self._connections.splice(connWithSameTargetIndex,1);
+          }
+
+          console.log('connWithSameTargetIndex', connWithSameTargetIndex);
+
           if (source === target){ //if a bubble was dropped on itself
             alert('You cannot make a connection within the same element');
           } else { 
 
             // make the connection in the elements array
-            target.inputConnectedTo = source;
+            //target.inputConnectedTo = source;  // not needed
               
             var observer = new PathObserver(source.element, sourceField);     
                observer.open(function(newValue, oldValue) {
@@ -374,9 +390,15 @@
             });
 
             // to set the value when elements are connected
+            
             target.element[targetField] = source.element[sourceField];  
 
-            self.updateConnections();
+            //self.updateConnections();
+
+            //console.log(self.connections);
+            
+            self._connections.push({source: source, target: target});
+
           }
 
         },
@@ -462,20 +484,38 @@
           var self = this;
           
           // Select the element being dragged from elements array          
-          var targetEl = self.findElById(self.draggedEl.classList[0]);
+          //var target = self.findElById(self.draggedEl.classList[0]);
+          
+          var targetId = self.draggedEl.classList[0];
+          console.log(targetId);
 
           // Check if it has a connection
-          if (targetEl.inputConnectedTo ){
-            self._deleteConnection(targetEl);
+          // 
+          var connection = self._connections.filter(function(conn) {
+            return conn.target.id===targetId;
+          });
+
+
+          if (connection.length>0){
+            self._deleteConnection(connection[0].target);
           }
         },
-        _deleteConnection: function(targetEl){
+        _deleteConnection: function(target){
           var self = this;
           if (confirm('Do you want to remove this connection?')) {
-              targetEl.element.input = null; // TODO: switch to called clearData on the element
-              targetEl.inputConnectedTo = false;
+              target.input = null; // TODO: switch to called clearData on the element
+              //targetEl.inputConnectedTo = false;
           } 
-          self.updateConnections();
+          //self.updateConnections();
+          
+          self._connections = self._connections.filter(function(conn) {
+            //assuming a component can accept incoming connection from only one
+            //component we can only check for target
+            return conn.target.id!==target.id;
+          });
+
+          console.log(self._connection);
+          
           self._drawConnections();
         },
         //for old connection pannel
