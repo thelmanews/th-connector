@@ -27,7 +27,9 @@
 
       <!-- Components and connector dots --> 
       <template repeat="{{el, index in _elements}}">
-        <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" on-dragStart="{{dragStartWrapper}}" on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" draggable="true">
+        <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" on-dragStart="{{dragStartWrapper}}" 
+        on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" 
+        style="top: {{el.top}}px; left: {{el.left}}px" draggable="true">
           <label>{{el.name}}</label>
           <!--<core-icon-button icon="clear" class="deleteEl {{el.element.id}}" on-click="{{_deleteElement}}"></core-icon-button> -->
           <div  class="deleteEl" component_id="{{el.element.id}}" on-click="{{_deleteElement}}">X</div>
@@ -191,16 +193,13 @@
           var components = self.querySelectorAll('*'); 
           [].forEach.call(components, function(el, i) {
 
-              // el.setAttribute('draggable',true); // Does this do anything?
-              // el.addEventListener('dragstart',function(e) {
-              //   self.draggedEl = e.toElement;
-              // });
               
               // if element already processed, ignore...
               var alreadyInElements = self._elements.filter(function(item) {
                 return el.id && el.id===item.id;
               });
               if(alreadyInElements.length>0) {
+                //return e.g. continue the loop
                 return;
               }
 
@@ -211,19 +210,17 @@
               el.id = el.id || self.generateUniqueId(elName);
 
               var index=boringTags.indexOf(elName);
-              if(index<0) {
-                self._elements.push({  element: el, 
-                                      id: el.id,
-                                      name: elName, 
-                                      outputReady: false,
-                                      inputReady: false
-                                  });
+              if(index>-1) {
+                // or continue the loop
+                return;
               }
 
+
               var droppedTop = el.getAttribute('_top'),
-                  droppedLeft = el.getAttribute('_left')
+                  droppedLeft = el.getAttribute('_left');
 
 
+              /*
               if(droppedTop && droppedLeft) {
                   //wait until the wrapper is created...
                   setTimeout(function() { 
@@ -234,6 +231,19 @@
                 },10 );
 
               }
+              */
+
+
+              self._elements.push({  element: el, 
+                                    id: el.id,
+                                    name: elName, 
+                                    outputReady: false,
+                                    inputReady: false,
+                                    top: droppedTop,
+                                    left: droppedLeft
+                                });
+              
+
 
 
           
@@ -247,7 +257,11 @@
 
 
         },
-
+        /**
+         * Arranges the wrappers if not already have top/left positions
+         * for when th-connector is created with elements inside it
+         * @return {null} 
+         */
         _arrangeComponents: function() {
 
           var self = this;
@@ -325,12 +339,25 @@
           
           selection.style.borderLeftColor = this.colors.accents[this.draggedEl.id];
 
-          var sourceEl = self.findElById(self.draggedEl.classList[0])
-          var targetEl = self.findElById(selection.classList[0])
+          var source = self.findElById(self.draggedEl.classList[0])
+          var target = self.findElById(selection.classList[0])
 
-          this._connectAttributes(sourceEl,'output',targetEl,'input');
+          this._connectAttributes(source,'output',target,'input');
+
+          self._drawConnections();
           
         },
+        
+        /**
+         * The functions which sets the connection (two way binging) between two element attrubutes
+         * There is not really a sourc/target distinction in the observer since it is a two way binging (in theory)
+         * but the distinction is conceptual and in UI.
+         * @param  {[type]} source      Source element
+         * @param  {[type]} sourceField The attribute to connect from source element
+         * @param  {[type]} target      Target element
+         * @param  {[type]} targetField The attribute to connect from target element
+         * @return {None}             
+         */
         _connectAttributes: function(source, sourceField, target, targetField) {
           var self = this;
 
@@ -351,7 +378,6 @@
 
             self.updateConnections();
           }
-          self._drawConnections();
 
         },
 
