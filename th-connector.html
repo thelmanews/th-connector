@@ -7,7 +7,7 @@
 <link rel="import" href="../core-item/core-item.html">
 <link rel="import" href="../th-theme/th-theme.html">
 
-<polymer-element name="th-connector" extend="d3-chart" attributes="componentList">
+<polymer-element name="th-connector" extend="d3-chart">
   <core-style ref="theme"></theme>
   <template>
     <link rel="stylesheet" href="th-connector.css"/>
@@ -17,13 +17,7 @@
 
     <div id="container" on-dragover="{{dragOver}}" on-drop="{{droppedInContainer}}">
       <svg id="svg"></svg>
-      <template if="{{componentList.length>0}}">
-        <core-menu id="component-list">
-          <template repeat="{{component in componentList}}">
-            <core-item class="{{component.name}}" on-dragStart="{{dragStartList}}" on-click="{{listClicked}}" draggable="true" label="{{component.friendly || component.name}}"></core-item>
-          </template>
-        </core-menu>
-      </template>
+
 
       <!-- Components and connector dots --> 
       <template repeat="{{el, index in _elements}}">
@@ -100,13 +94,6 @@
         _targetElementSelection: null,
         _targetPropertySelection: null,
         _connections: [], 
-        //connections: [],
-        /**
-         * 'componentList' is an array of objects that is used to create a menu of components which can be added to th-connector
-         * @type {Array} 
-         * @example [{"name":"th-mapbox", "friendly":"Mapbox", "category":"Maps"}]
-         */
-        componentList: [],
         domReady: function() {
           var self = this;
 
@@ -635,10 +622,6 @@
           if(tempPath) {
             tempPath.parentNode.removeChild(tempPath);
           }
-
-        },
-        dragStartList: function(e, detail, selection) {
-           e.dataTransfer.setData("text/plain",selection.classList[0]);
 
         },
 
