@@ -23,7 +23,7 @@
     "th-n-bar-chart": "thelmanews/th-n-bar-chart",
     "th-n-peak-chart": "thelmanews/th-n-peak-chart",
     "th-table-data": "thelmanews/th-table-data",
-    "th-table-data": "thelmanews/th-component-list"
+    "th-component-list": "thelmanews/th-component-list"
   },
   "resolutions": {
     "polymer": "~0.5.1",
