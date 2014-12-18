@@ -1,0 +1,268 @@
+     :host{
+        font-size: 12px;
+        font-family: open-sans, sans-serif;
+        display: block;
+        width: 100%;
+        height: 100%;
+
+      } 
+      #chartData_anchor1 {
+        position: absolute;
+        top: 5px;
+        left: 5px;
+      }
+      #chartData_anchor2 {
+        position: absolute;
+        top: 25px;
+        left: 5px;
+      }
+      .anchor {
+        width: 5px;
+        height: 5px;
+        background-color: #555;
+        cursor: pointer;
+      }
+      .item {
+        width: 100%;
+        border-bottom: 1px solid #555;
+        line-height: 1.4em;
+
+      }
+      .panel {
+        border: 1px solid #AAA;
+        background-color: rgba(255,255,255,0.9);
+        padding: 5px;
+        margin: 10px;
+        position: relative;
+        width: 900px;
+        z-index: 110;
+
+      }
+      .panel .selector {
+        display: inline;
+        margin-right: 10px; 
+
+      }
+      .panel core-selector {
+        width: 150px;
+        display: inline-block;
+        vertical-align: top;
+      }
+      .panel .core-selected {
+        background-color: #ccc;
+        border: 1px solid #888;
+      }
+      .panel label {
+        display: inline-block;
+        vertical-align: top;
+      }
+      /* for old connection pannel, depriciated */
+      /*
+      .connections {
+        margin-top: 10px;
+        opacity: 0; 
+      }
+
+      .connections ul {
+        list-style: none;
+        width: 80%;
+        padding: 0;
+        margin: 0;
+      }
+      .connections ul li {
+        margin: 3px 0;
+      }
+      .connections .del {
+        float: right;
+        color: #2fa3af;
+      }
+
+      .connections {
+        margin: 0px 0px 30px 30px;
+      }
+
+      .connections core-icon, .connections core-icon-button::shadow core-icon {
+        height: 20px;
+      }
+
+      .connections ul {
+        list-style: none;
+      }
+
+      .connections li {
+        padding-left: 5px;
+        /*padding: 0;*/
+      }
+      .connection-list {
+        border: 2px solid #ddd;
+        
+        width: 500px;
+        /*padding: 10px;*/
+
+      }      
+      */
+
+      a, a:visited {
+        color: #555;
+        text-decoration: none;
+      }
+
+
+      label {
+        color: #2fa3af;
+      }
+
+      ::content  .selected-src-element {
+        border-left-color: #66CCFF;
+        margin: 0;
+
+        box-sizing:border-box;
+        -moz-box-sizing:border-box;
+        -webkit-box-sizing:border-box;
+      }
+      ::content  .selected-target-element {
+        border-left-color: #00FF99  ;
+        margin: 0;
+
+        box-sizing:border-box;
+        -moz-box-sizing:border-box;
+        -webkit-box-sizing:border-box;
+      }
+      
+      ::content > *:not(ul) { /* selects the elements */
+        min-width: 20px;
+        min-height: 20px;
+        /*border: 1px solid #DDD;*/
+        margin: 2px;
+        display: inline-block;
+        position: relative;
+        /* border inside */
+        vertical-align: top;
+      }
+
+      /* Style above can be removed? */
+
+
+
+      .wrapper {
+        border: 3px solid #eee;
+        display: inline-block;
+        position: absolute;
+        margin: 30px 20px;
+        margin-left: 60px;
+        min-height: 80px;
+        background-color: white;
+      }
+      /*
+      .wrapper [draggable] {
+        -moz-user-select: none;
+        -khtml-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
+        
+        -khtml-user-drag: element;
+        -webkit-user-drag: element;
+      }
+      */
+
+      .connectors-in {
+        position: absolute;
+        left: -15px;
+        top: 0px;
+      }
+
+      .connectors-out {
+        position: absolute;
+        right: -15px;
+        top: 0px;
+      }
+
+      .wrapper li {
+        list-style: none;
+        position: relative;
+        font-size: 9px;
+        margin: 2px auto;
+      }
+
+
+      .inputMarker {
+          width: 0; 
+          height: 0; 
+          border-top: 8px solid transparent;
+          border-bottom: 8px solid transparent;
+  
+          border-left: 10px solid #555;
+          box-sizing: border-box;
+      }
+
+      .outputMarker {
+          width: 0; 
+          height: 0; 
+          border-top: 8px solid transparent;
+          border-bottom: 8px solid transparent;
+          border-left: 10px solid #555;
+      }
+
+      .final-result-buttons {
+        position: absolute;
+        right: -45px;
+        top: -10px;
+      }
+
+      .final-result-selected core-icon-button {
+        color: #52CC6A;
+      }
+
+      .wrapper label{
+        position: absolute;
+        top: -20px;
+        left: 0;
+        padding: 0;
+        font-size: 10pt;
+        overflow: visible;
+        cursor: move;
+      }
+
+      #container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+
+      }
+
+      svg {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 0;
+        padding: 0;
+        z-index: 100;
+        pointer-events: none;
+      }
+
+
+      .core-selected {
+       font-weight: normal;
+      }
+      .deleteEl {
+
+        width: 12px;
+        height: 12px;
+        float: right;
+        display: inline-block;
+        position: absolute;
+        top: -20px;
+        right: -3px;
+        cursor: pointer;
+        vertical-align: middle;
+        padding: 1px;
+        text-align: center;
+
+
+      }
+      .deleteEl:hover {
+        border: 1px solid #eee;
+        border-radius: 2px;
+      }
