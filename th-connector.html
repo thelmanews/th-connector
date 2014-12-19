@@ -11,6 +11,8 @@
   <core-style ref="theme"></theme>
   <template>
     <link rel="stylesheet" href="th-connector.css"/>
+
+    <x-meta id="meta"></x-meta>
  
     <div class="connectors">
     </div>
@@ -167,7 +169,29 @@
           //                        self._targetElementSelection, self._targetPropertySelection);
           // });
 
+          this._loadMetadata();
 
+        },
+
+        _loadMetadata: function() {
+          Polymer.import(['../th-map-us/metadata.html'], this._metaLoaded.bind(this));
+        },
+        _metaLoaded: function(a) {
+          var self = this;
+          console.log('loaded', this.$.meta);
+          setTimeout(function() {
+            console.log('loaded', self.$.meta);
+            console.log('loaded', self.$.meta.list);
+            console.log('loaded', self.$.meta.categories);
+            console.log('loaded', self.$.meta.map);
+
+            var googleMap = self.querySelector('th-google-map');
+            console.log('goog',googleMap);
+            if(googleMap)
+              console.log('meta' , googleMap._designMeta);
+
+
+          }, 3000)
         },
         _updateFields: function() {
           var self = this;
