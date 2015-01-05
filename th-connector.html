@@ -700,7 +700,7 @@
 
         dragStartWrapper: function(e, details, selection) {
 
-          //if resize is being dragged (stopPropagation is not doing anything)
+          //if resize is being dragged don't do anything (stopPropagation is not doing anything)
           if(e.path[0].classList && e.path[0].classList.length>0 && e.path[0].classList.contains('resize')) {
             return false;
           }
@@ -726,14 +726,23 @@
           var self = this;
 
           var wrapper = selection.parentNode;
-          var styles = window.getComputedStyle(wrapper);
-          //console.log(styles);
-          var wrapperTop = parseInt(styles.top.replace('px',''));
-          var wrapperLeft = parseInt(styles.left.replace('px',''));
+          //var styles = window.getComputedStyle(wrapper);
+          // var wrapperTop = parseInt(styles.top.replace('px',''));
+          // var wrapperLeft = parseInt(styles.left.replace('px',''));
 
-          //console.log(styles);
-          wrapper.style.width = (e.x - wrapperLeft - 60)+'px';
-          wrapper.style.height = (e.y - wrapperTop - 80)+'px';
+          // var w =  e.x - wrapperLeft - 65,
+          //     h = e.y - wrapperTop - 172;
+
+          var wrapperTop = parseInt(wrapper.getBoundingClientRect().top),
+              wrapperLeft = parseInt(wrapper.getBoundingClientRect().left);
+          
+
+          var w =  e.x - wrapperLeft,
+              h = e.y - wrapperTop;
+
+
+           wrapper.style.width = w +'px';
+           wrapper.style.height = h +'px';
 
           var elementInsideId = wrapper.id.replace('wrapper-','');
           var elementInside = this.querySelector('#'+elementInsideId);
