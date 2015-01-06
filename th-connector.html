@@ -408,7 +408,6 @@
           //clear all paths. since it is not done offten it is fine to do it in a not optimized way
           self.$.svg.innerHTML = '';
 
-          console.log('connections to draw', self._connections);
           
           for (var i = 0; i < self._connections.length; i++) {
 
@@ -749,10 +748,6 @@
           var elementInsideId = wrapper.id.replace('wrapper-','');
           var elementInside = this.querySelector('#'+elementInsideId);
 
-          console.log(elementInside.resize);
-          if(typeof elementInside.resize ==='function') {
-            elementInside.resize();
-          }
 
           self._drawConnections();
 
@@ -769,7 +764,6 @@
           var elementInsideId = wrapper.id.replace('wrapper-','');
           var elementInside = this.querySelector('#'+elementInsideId);
 
-          //console.log(elementInside.resize);
           if(typeof elementInside.resize ==='function') {
             elementInside.resize();
           }
