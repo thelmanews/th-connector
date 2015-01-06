@@ -457,7 +457,9 @@
 
         _createBezierPath: function(startX, startY, endX, endY, handleOffsetX) {
 
-            
+            if(startX > endX) {
+              handleOffsetX *= 2;
+            }
             var path = "M"+parseInt(startX)+","+parseInt(startY)+
                        " C"+parseInt(startX + handleOffsetX)+","+parseInt(startY)+
                        " "+parseInt(endX - handleOffsetX)+","+parseInt(endY)+
