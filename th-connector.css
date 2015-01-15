@@ -154,7 +154,7 @@
         background-color: white;
         overflow: hide;
         min-width: 100px;
-        min-height: 100px;
+        min-height: 50px;
       }
       /*
       .wrapper [draggable] {
@@ -284,4 +284,37 @@
       .deleteEl:hover {
         border: 1px solid #eee;
         border-radius: 2px;
+      }
+
+      .data-preview {
+        position: fixed;
+        max-height: 100px;
+        overflow-y: scroll;
+        z-index: 100;
+        width: 100%;
+        background-color: rgba(255,255,255,0.9);
+        border: 1px solid #AAA;
+      }
+
+      .data-preview label {
+        color: #2fa3af;
+        font-size: 11px;
+      }
+
+      .data-preview .table {
+        margin-top: -5px;
+      }
+
+      #input_preview {
+        top: 0;
+        left: 0;
+      }
+      #output_preview {
+        bottom: 0;
+        left: 0;
+      }
+
+      .sel-element {
+        border-width: 5px;
+        z-index: 200;
       }
