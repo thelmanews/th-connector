@@ -6,6 +6,9 @@
 <link rel="import" href="../core-menu/core-menu.html">
 <link rel="import" href="../core-item/core-item.html">
 <link rel="import" href="../th-theme/th-theme.html">
+<!-- <link rel="import" href="../aha-table/dist/aha-table.html">
+ -->
+<link rel="import" href="../sortable-table/sortable-table.html">
 
 <polymer-element name="th-connector" attributes="componentList">
   <core-style ref="theme"></theme>
@@ -15,13 +18,20 @@
     <div class="connectors">
     </div>
 
+    <div id="input_preview" class="data-preview">
+      <template if="{{_selElement.input}}">
+        <label>selected component input</label>
+        <sortable-table class="table" data="{{_selElement.input}}"></sortable-table>
+      </template>
+    </div>
+
     <div id="container" on-dragover="{{dragOver}}" on-drop="{{droppedInContainer}}">
       <svg id="svg"></svg>
 
 
       <!-- Components and connector dots --> 
       <template repeat="{{el, index in _elements}}">
-        <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" on-dragStart="{{dragStartWrapper}}" 
+        <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" on-click="{{wrapperClicked}}" on-dragStart="{{dragStartWrapper}}" 
         on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" 
         style="top: {{el.top}}px; left: {{el.left}}px" draggable="true">
           <label>{{el.name}}</label>
@@ -55,6 +65,14 @@
         </div>
       </template>
     </div>
+
+    <div id="output_preview" class="data-preview">
+      <template if="{{_selElement.output}}">
+        <label>selected component output</label>
+        <sortable-table class="table" data="{{_selElement.output}}"></sortable-table>
+      </template>
+    </div>
+
 
     <!-- Connections (for old connection pannel, depriciated) -->
     <!--
@@ -583,6 +601,20 @@
         checkForNoOutputAttr: function(value){
           return Object.keys(value).indexOf("output") > -1 ? false : true;
         },
+        wrapperClicked: function(e, detail, selection) {
+          var wrapperEl = selection;
+          if(this._selWrapper) {
+            this._selWrapper.classList.remove('sel-element');
+          }
+          this._selWrapper = wrapperEl;
+          this._selWrapper.classList.add('sel-element');
+
+          var elementId = wrapperEl.id;
+          elementId = elementId.substring(8, elementId.length);
+
+          this._selElement = this.findElById(elementId).element;
+
+        }, 
         dragStart: function(e, detail, selection){
 
 
