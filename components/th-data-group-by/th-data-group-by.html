@@ -1,0 +1,190 @@
+<link rel="import" href="../polymer/polymer.html"> 
+<link rel="import" href="../th-theme/th-theme.html"> 
+
+<!--
+A Thelma component providing solution to no problem in particular.
+
+##### Example
+
+    <th-data-group-by></th-data-group-by>
+
+@element th-data-group-by
+@blurb Element providing solution to no problem in particular.
+@status alpha
+@homepage http://sepans.github.io/th-data-group-by
+-->
+
+<polymer-element name="th-data-group-by" attributes="input output included ">
+  <template>
+
+    <th-data-utility id="data_utility"></th-data-utility>
+
+    <link rel="stylesheet" href="th-data-group-by.css">
+
+    <template if="{{!included}}">
+      <core-icon-button icon="perm-data-setting" on-click="{{showControls}}"></core-icon-button>
+    </template>
+
+    <core-collapse id="ctrl_collapse">      
+
+            <p class="info">Group same values of a column together and apply function on others</p>
+            <label for="func_selector">Group by column:</label>
+            <core-selector id="value_selector" selected="{{groupByCol}}" valueattr="label">
+              <template repeat="{{attr in _dataAttributes}}">
+                <div class="col" label="{{attr}}">{{attr}}</div>
+              </template>
+            </core-selector>
+            <label for="func_selector">Apply function:</label>
+            <core-selector id="func_selector" id="" selected="{{selectedFunc}}" valueattr="label">
+                      <div class="col" label="frequency">Frequency</div>
+                  <!--<template if="{{_whereColumnNumeric}}">-->
+                    <template repeat="{{func in _numericFunctions}}">
+                      <div class="col" label="{{func.label}}">{{func.name}}</div>
+                    </template>
+                  <!--</template>-->
+            </core-selector>
+            <label for="func_selector">On column:</label>
+            <core-selector id="value_selector" selected="{{funcCol}}" valueattr="label">
+              <template repeat="{{attr, attrIndex in _dataAttributes}}">
+                  <template if="{{_numericColumns[attrIndex]}}">
+                    <template if="{{attr!==groupByCol}}">
+                      <div class="col" label="{{attr}}">{{attr}}</div>
+                    </template>
+                  </template>
+              </template>
+            </core-selector>
+            <label for="sort_selector">Sort:</label>
+            <core-selector id="func_selector" id="" selected="{{selectedSort}}" valueattr="label">
+                <div class="col" label="none">None</div>
+                <div class="col" label="asc">Ascending</div>
+                <div class="col" label="desc">Descending</div>
+            </core-selector>
+      </core-collapse>  
+    </template>
+
+  <script src="../lodash/dist/lodash.js"></script>
+  
+  <script>
+    Polymer({
+      /**
+       * Included: true makes the component to be just UI. To be used in other components like th-chart-data-filter
+       * @type {Boolean}
+       */
+      included: false,
+      _numericFunctions: [  
+              {label:'max', name: 'Max'},
+              {label:'min', name: 'Min'},
+              {label:'sum', name: 'Sum'},
+              {label:'avg', name: 'Average'},
+              /*
+              {label:'stddev', name: 'Standard Deviation'},
+              {label:'variance', name: 'Variance'}
+              */
+            ],
+
+      _numericColumns: [],
+      selectedFunc: 'frequency',
+
+      selectedSort: 'none',
+      
+
+      ready: function () {
+        //open the collapse if it the component is included
+        if(this.included && !this.$.ctrl_collapse.opened) {
+          this.$.ctrl_collapse.toggle();
+        }
+      },
+      _calculateOutput: function() {
+
+        var self = this;
+
+        //don't calculate anything if it is just included in another component
+        if(this.included) {
+          return;
+        }
+        if(self.groupByCol && self.groupByCol!=='none') {
+          if(!self.selectedFunc || self.selectedFunc==='frequency') {
+            var temp = _.countBy(self.input, self.groupByCol);
+            var keys = Object.keys(temp);
+            self.output = _.map(keys, function(key) {
+              return {
+                label: key,
+                value: temp[key]
+              }
+            })
+          }
+          else {
+            var temp = _.groupBy(self.input, self.groupByCol);
+            var aggrFunction = self.$.data_utility.aggregateFunctions[self.selectedFunc];
+            self.output = _.map(temp,function(value, key) {
+              //var ret = {};
+              //ret[key] = aggrFunction(value, self.funcCol)
+              ret = {label: key, value : aggrFunction(value, self.funcCol)}
+              return ret;
+            });
+
+
+          }
+          if(self.selectedSort!=='none') {
+            self.output = _.sortBy(self.output, 'value');
+            if(self.selectedSort==='desc') {
+              self.output.reverse();
+            }
+          }
+
+        }
+
+
+      },
+      inputChanged: function() {
+
+          var self = this;
+          var firstItem = self.input[0];
+          if(!firstItem) {
+            return;
+          }
+          var attributes = Object.keys(firstItem);
+          
+          if(JSON.stringify(self._dataAttributes) === JSON.stringify(attributes) ) {
+            //self._mapChartData();
+          }
+          else {
+            self._dataAttributes = attributes;
+          }
+
+          self._findNumericalColumns();
+
+          self._calculateOutput();          
+
+
+      },      
+      _findNumericalColumns: function() {
+          var self = this;
+          self._dataAttributes.forEach(function(key, index) {
+            var isNum = self.$.data_utility.isColumnNumeric(self.input, key);
+            self._numericColumns[index] = isNum;
+          });
+
+      },
+ 
+      selectedFuncChanged: function() {
+        this._calculateOutput();
+      },
+      selectedSortChanged: function() {
+        //or just sort?
+        this._calculateOutput();
+      },
+      groupByColChanged: function() {
+        this._calculateOutput(); 
+      },
+      funcColChanged: function() {
+        this._calculateOutput(); 
+      },
+      showControls: function(e) {
+        this.$.ctrl_collapse.toggle();
+      }
+
+
+    });
+  </script>
+</polymer-element>

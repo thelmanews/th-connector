@@ -1,0 +1,11 @@
+{
+  "name": "th-data-utility",
+  "version": "0.0.0",
+  "keywords": "thelma, polymer, web-components",
+  "main": "th-data-utility.html",
+  "dependencies": {
+    "polymer": "Polymer/polymer#~0.5.1",
+    "lodash": "~2.4.1",
+    "numeral": "~1.5.3"
+  }
+}

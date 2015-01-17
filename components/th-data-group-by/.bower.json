@@ -1,0 +1,22 @@
+{
+  "name": "th-data-group-by",
+  "keywords": "thelma, polymer, web-components",
+  "main": "th-data-group-by.html",
+  "dependencies": {
+    "polymer": "Polymer/polymer#~0.5.1",
+    "lodash": "~2.4.1",
+    "th-data-utility": "thelmanews/th-data-utility",
+    "numeral": "~1.5.3"
+  },
+  "homepage": "https://github.com/thelmanews/th-data-group-by",
+  "_release": "97441436eb",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "97441436eb281194f050112de56505a9f011efb9"
+  },
+  "_source": "git://github.com/thelmanews/th-data-group-by.git",
+  "_target": "*",
+  "_originalSource": "thelmanews/th-data-group-by",
+  "_direct": true
+}

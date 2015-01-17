@@ -1,0 +1,12 @@
+{
+  "name": "th-data-group-by",
+  "version": "0.0.0",
+  "keywords": "thelma, polymer, web-components",
+  "main": "th-data-group-by.html",
+  "dependencies": {
+    "polymer": "Polymer/polymer#~0.5.1",
+    "lodash": "~2.4.1",
+    "th-data-utility": "thelmanews/th-data-utility",
+    "numeral": "~1.5.3"
+  }
+}
