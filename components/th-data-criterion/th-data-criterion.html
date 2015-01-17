@@ -1,0 +1,136 @@
+<link rel="import" href="../polymer/polymer.html"> 
+<link rel="import" href="../core-selector/core-selector.html">
+<link rel="import" href="../core-collapse/core-collapse.html">
+<link rel="import" href="../core-input/core-input.html">
+
+<!--
+A Thelma component providing solution to no problem in particular.
+
+##### Example
+
+    <th-data-criterion></th-data-criterion>
+
+@element th-data-criterion
+@blurb Element providing solution to no problem in particular.
+@status alpha
+@homepage http://sepans.github.io/th-data-criterion
+-->
+
+<polymer-element name="th-data-criterion" attributes="input output included whereOperator whereClause whereColumn">
+  <template>
+    <link rel="stylesheet" href="th-data-criterion.css">
+
+    <template if="{{!included}}">
+      <core-icon-button icon="perm-data-setting" on-click="{{showControls}}"></core-icon-button>
+    </template>
+
+    <core-collapse id="ctrl_collapse">      
+
+            <p class="info">Apply a filter on another column to norrow down the results.</p>
+            <label for="func_selector">Filter on column:</label>
+            <core-selector id="value_selector" selected="{{whereColumn}}" valueattr="label">
+                <div class="col" label="none">None</div>
+              <template repeat="{{attr in _dataAttributes}}">
+                <div class="col" label="{{attr}}">{{attr}}</div>
+              </template>
+            </core-selector>
+            <label for="where_ops_selector">where operator:</label>
+            <core-selector id="where_ops_selector" selected="{{whereOperator}}" valueattr="label">
+                  <div class="col" label="eq">Equal</div>
+                  <!--
+                  <div class="col" label="ne">Not Equal</div>
+                  <div class="col" label="gt">Greater than</div>
+                  <div class="col" label="st">Smaller than</div>
+                  -->
+            </core-selector>
+            <label for="where_ops_selector">criteria:</label>
+            <core-selector id="value_selector" selected="{{whereClause}}" valueattr="label">
+              <template repeat="{{option in whereOptions}}">
+                <div class="col" label="{{option.value}}">{{option.value}}-{{option.count}}</div>
+              </template>
+            </core-selector>
+            or
+            <input is="core-input" value="{{whereClause}}" placeHolder="(e.g. blank or  New York)"></input>
+      </core-collapse>
+
+
+  </template>
+
+  <script src="../lodash/dist/lodash.js"></script>
+
+  <script>
+    Polymer({
+      /**
+       * Included: true makes the component to be just UI. To be used in other components like th-chart-data-filter
+       * @type {Boolean}
+       */
+      included: false,
+      ready: function () {
+        //open the collapse if it the component is included
+        if(this.included && !this.$.ctrl_collapse.opened) {
+          this.$.ctrl_collapse.toggle();
+        }
+      },
+      _calculateOutput: function() {
+
+        var self = this;
+
+        //don't calculate anything if it is just included in another component
+        if(this.included) {
+          return;
+        }
+        if(self.whereColumn && self.whereColumn!=='none' && self.whereClause && self.whereClause.length>0) {
+          self.output = _.filter(self.input,function(element) {
+            return element[self.whereColumn]===self.whereClause;
+          })
+
+          //this.output = tmp;
+        }
+
+
+      },
+      inputChanged: function() {
+
+          var self = this;
+          var firstItem = self.input[0];
+          if(!firstItem) {
+            return;
+          }
+          var attributes = Object.keys(firstItem);
+          
+          if(JSON.stringify(self._dataAttributes) === JSON.stringify(attributes) ) {
+            //self._mapChartData();
+          }
+          else {
+            self._dataAttributes = attributes;
+          }
+
+          self._calculateOutput();          
+
+
+      },      
+      _updateWhereClauses: function() {
+        var self = this;
+        self.whereOptions = _.chain(self.input)
+                .countBy(function(item) { return item[self.whereColumn]; } )
+                .map(function(value, key) { return {'value': key, 'count': value} })
+                .sortBy(function(item) { return item.count})
+                .reverse()
+                .value();
+
+        self._calculateOutput();
+      },
+      whereColumnChanged: function() {
+        this._updateWhereClauses();
+      },
+      whereClauseChanged: function() {
+        this._calculateOutput(); 
+      },
+      showControls: function(e) {
+        this.$.ctrl_collapse.toggle();
+      }
+
+
+    });
+  </script>
+</polymer-element>

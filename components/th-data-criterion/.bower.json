@@ -1,0 +1,21 @@
+{
+  "name": "th-data-criterion",
+  "keywords": "thelma, polymer, web-components",
+  "main": "th-data-criterion.html",
+  "dependencies": {
+    "th-theme": "thelmanews/th-theme",
+    "polymer": "Polymer/polymer#~0.5.1",
+    "lodash": "~2.4.1"
+  },
+  "homepage": "https://github.com/thelmanews/th-data-criterion",
+  "_release": "05d4661254",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "05d46612547a07156d18713391d1c5ba59b233c9"
+  },
+  "_source": "git://github.com/thelmanews/th-data-criterion.git",
+  "_target": "*",
+  "_originalSource": "thelmanews/th-data-criterion",
+  "_direct": true
+}
