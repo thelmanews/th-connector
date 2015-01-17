@@ -6,13 +6,23 @@
 <link rel="import" href="../core-menu/core-menu.html">
 <link rel="import" href="../core-item/core-item.html">
 <link rel="import" href="../th-theme/th-theme.html">
+<!-- <link rel="import" href="../aha-table/dist/aha-table.html">
+ -->
+<link rel="import" href="../sortable-table/sortable-table.html">
 
 <polymer-element name="th-connector" attributes="componentList">
-  <core-style ref="theme"></theme>
+  <core-style id="core_style" ref="theme"></theme>
   <template>
     <link rel="stylesheet" href="th-connector.css"/>
  
     <div class="connectors">
+    </div>
+
+    <div id="input_preview" class="data-preview">
+      <template if="{{_selElement.input}}">
+        <label>selected component input</label>
+        <sortable-table class="table" data="{{_selElement.input}}"></sortable-table>
+      </template>
     </div>
 
     <div id="container" on-dragover="{{dragOver}}" on-drop="{{droppedInContainer}}">
@@ -21,7 +31,7 @@
 
       <!-- Components and connector dots --> 
       <template repeat="{{el, index in _elements}}">
-        <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" on-dragStart="{{dragStartWrapper}}" 
+        <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" on-click="{{wrapperClicked}}" on-dragStart="{{dragStartWrapper}}" 
         on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" 
         style="top: {{el.top}}px; left: {{el.left}}px" draggable="true">
           <label>{{el.name}}</label>
@@ -55,6 +65,14 @@
         </div>
       </template>
     </div>
+
+    <div id="output_preview" class="data-preview">
+      <template if="{{_selElement.output}}">
+        <label>selected component output</label>
+        <sortable-table class="table" data="{{_selElement.output}}"></sortable-table>
+      </template>
+    </div>
+
 
     <!-- Connections (for old connection pannel, depriciated) -->
     <!--
@@ -408,7 +426,6 @@
           //clear all paths. since it is not done offten it is fine to do it in a not optimized way
           self.$.svg.innerHTML = '';
 
-          console.log('connections to draw', self._connections);
           
           for (var i = 0; i < self._connections.length; i++) {
 
@@ -457,7 +474,9 @@
 
         _createBezierPath: function(startX, startY, endX, endY, handleOffsetX) {
 
-            
+            if(startX > endX) {
+              handleOffsetX *= 2;
+            }
             var path = "M"+parseInt(startX)+","+parseInt(startY)+
                        " C"+parseInt(startX + handleOffsetX)+","+parseInt(startY)+
                        " "+parseInt(endX - handleOffsetX)+","+parseInt(endY)+
@@ -582,6 +601,20 @@
         checkForNoOutputAttr: function(value){
           return Object.keys(value).indexOf("output") > -1 ? false : true;
         },
+        wrapperClicked: function(e, detail, selection) {
+          var wrapperEl = selection;
+          if(this._selWrapper) {
+            this._selWrapper.classList.remove('sel-element');
+          }
+          this._selWrapper = wrapperEl;
+          this._selWrapper.classList.add('sel-element');
+
+          var elementId = wrapperEl.id;
+          elementId = elementId.substring(8, elementId.length);
+
+          this._selElement = this.findElById(elementId).element;
+
+        }, 
         dragStart: function(e, detail, selection){
 
 
@@ -700,7 +733,7 @@
 
         dragStartWrapper: function(e, details, selection) {
 
-          //if resize is being dragged (stopPropagation is not doing anything)
+          //if resize is being dragged don't do anything (stopPropagation is not doing anything)
           if(e.path[0].classList && e.path[0].classList.length>0 && e.path[0].classList.contains('resize')) {
             return false;
           }
@@ -726,22 +759,27 @@
           var self = this;
 
           var wrapper = selection.parentNode;
-          var styles = window.getComputedStyle(wrapper);
-          //console.log(styles);
-          var wrapperTop = parseInt(styles.top.replace('px',''));
-          var wrapperLeft = parseInt(styles.left.replace('px',''));
+          //var styles = window.getComputedStyle(wrapper);
+          // var wrapperTop = parseInt(styles.top.replace('px',''));
+          // var wrapperLeft = parseInt(styles.left.replace('px',''));
 
-          //console.log(styles);
-          wrapper.style.width = (e.x - wrapperLeft - 60)+'px';
-          wrapper.style.height = (e.y - wrapperTop - 80)+'px';
+          // var w =  e.x - wrapperLeft - 65,
+          //     h = e.y - wrapperTop - 172;
+
+          var wrapperTop = parseInt(wrapper.getBoundingClientRect().top),
+              wrapperLeft = parseInt(wrapper.getBoundingClientRect().left);
+          
+
+          var w =  e.x - wrapperLeft,
+              h = e.y - wrapperTop;
+
+
+           wrapper.style.width = w +'px';
+           wrapper.style.height = h +'px';
 
           var elementInsideId = wrapper.id.replace('wrapper-','');
           var elementInside = this.querySelector('#'+elementInsideId);
 
-          console.log(elementInside.resize);
-          if(typeof elementInside.resize ==='function') {
-            elementInside.resize();
-          }
 
           self._drawConnections();
 
@@ -758,7 +796,6 @@
           var elementInsideId = wrapper.id.replace('wrapper-','');
           var elementInside = this.querySelector('#'+elementInsideId);
 
-          //console.log(elementInside.resize);
           if(typeof elementInside.resize ==='function') {
             elementInside.resize();
           }

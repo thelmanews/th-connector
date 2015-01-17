@@ -456,17 +456,23 @@
             "version": "0.0.1",
             "thumbnail":"nbar.jpg", 
             "tags":["chart", "bar"],
+            "fields":[{ "name":"label", "type":"string"},
+                      { "name":"value", "type":"int"},
+                      { "name":"display_value", "type":"string"}
+            ],
             "inputAttr": {
               "chartData":{"friendly":"Data", "type":"table-repeating","rows":2, 
                 "fields":{
                   "label":{"friendly":"Label", "type":"string", "default":"Player"},
                   "value":{"friendly":"Value", "type":"int", "default":15},
-                  "display_value":{"friendly":"Display Value", "type":"string", "default":""}
+                  "display_value":{"friendly":"Display Value", "type":"string", "default":"$15"},
+                  "color":{"friendly":"Color", "type":"colorPicker", "colorDefault":"accent", "default":""}
                 },
                 "default":[
-                  {"label": "Player", "value": 15, "display_value": "$15"},
-                  {"label": "Vendor", "value": 20, "display_value": "$20"},
-                  {"label": "Mascot", "value": 45, "display_value": "$45"}
+                  {"label": "Platinum", "value": 50, "display_value": "$50", "color":""},
+                  {"label": "Gold", "value": 45, "display_value": "$40", "color":""},
+                  {"label": "Silver", "value": 30, "display_value": "$30", "color":""},
+                  {"label": "Bronze", "value": 25, "display_value": "$25", "color":""}
                 ]
               }
             }

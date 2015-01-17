@@ -7,13 +7,13 @@
     "core-style": "Polymer/core-style#~0.5.1"
   },
   "homepage": "https://github.com/thelmanews/th-theme",
-  "_release": "94c4fb313c",
+  "_release": "5a91372e8d",
   "_resolution": {
     "type": "branch",
     "branch": "master",
-    "commit": "94c4fb313c5a67ef998a926fbaf8932d44eb0a3f"
+    "commit": "5a91372e8de51adfee84fa16ec0a5e3391c831ad"
   },
-  "_source": "git://github.com/thelmanews/th-theme.git",
+  "_source": "https://github.com/thelmanews/th-theme.git",
   "_target": "*",
-  "_originalSource": "thelmanews/th-theme"
+  "_originalSource": "https://github.com/thelmanews/th-theme.git"
 }

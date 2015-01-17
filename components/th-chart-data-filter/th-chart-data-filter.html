@@ -4,6 +4,12 @@
 <link rel="import" href="../core-input/core-input.html">
 <link rel="import" href="../core-collapse/core-collapse.html">
 <link rel="import" href="../core-icon-button/core-icon-button.html">
+<link rel="import" href="../core-menu/core-menu.html">
+<link rel="import" href="../core-item/core-item.html">
+
+<link rel="import" href="../th-data-criterion/th-data-criterion.html">
+
+
 
 <!--
 Converts an array of object to data suitable for thelma charts.
@@ -34,23 +40,39 @@ Converts an array of object to data suitable for thelma charts.
         }
 
         core-selector .col {
-          padding: 3px;
-          border: 1px solid #ccc;
+          padding: 1px;
+          border: 1px solid #EEE;
         }
         core-selector .core-selected {
           background-color: #ccc;
-          border: 1px solid #888;
 
         }
         label {
           display: block;
           color: #2fa3af;
-          border-top: 1px solid #AAA;
         }
 
-      .elTitle {
-              color: #2fa3af;
-              padding: 2px;
+
+      .collapse-btn {
+          color: #2fa3af;
+          display: block;
+          text-decoration: none;
+          font-weight: bold;
+          padding: 1px 0;
+      }
+      .collapse-btn:before {
+        content: ' * ';
+      }
+
+      .selection {
+        border-top: 2px solid #2fa3af;
+        padding: 2px;
+        max-width: 200px;
+
+      }
+      .selection core-selector {
+        max-height: 123px;
+        overflow-y: scroll; 
       }
       
       </style>
@@ -63,29 +85,97 @@ Converts an array of object to data suitable for thelma charts.
     <core-icon-button icon="perm-data-setting" on-click="{{showControls}}"></core-icon-button>
 
     <core-collapse id="ctrl_collapse">      
-      <label for="label_selector">Select label column: </label> 
-      <core-selector id="label_selector" selected="{{_selectedLabel}}" valueattr="label">
-        <template repeat="{{attr in _dataAttributes}}">
-          <div label="{{attr}}">{{attr}}</div>
-        </template>
-      </core-selector>
-
-      <label for="">Prefix for label: </label> 
-      <input is="core-input" value="{{labelPrefix}}" placeHolder="prefix for label">
-      <label for="">Rows to pass (0 for all):</label> 
-      <input is="core-input" value="{{numberOfRows}}" placeHolder="Number of Rows">
+      <div class="selection">
+        <label for="value_selector">Select Data column(s): </label> 
+        <core-selector id="value_selector" selected="{{_selectedValue}}" valueattr="label">
+          <template repeat="{{attr in _dataAttributes}}">
+            <div class="col" label="{{attr}}">{{attr}}</div>
+          </template>
+        </core-selector>
+      </div>
 
 
+      <div class="selection">
+        <a class="collapse-btn label_collapse" href="javascript:void(0)" on-click="{{showCollapse}}">Select Label</a>
+        <core-collapse id="label_collapse">      
 
-      <label for="value_selector">Select value column: </label> 
-      <core-selector id="value_selector" selected="{{_selectedValue}}" valueattr="label">
-        <template repeat="{{attr in _dataAttributes}}">
-          <div label="{{attr}}">{{attr}}</div>
-        </template>
-      </core-selector>
+
+            <label for="label_selector">Select label column: </label> 
+            <core-selector id="label_selector" selected="{{_selectedLabel}}" valueattr="label">
+              <template repeat="{{attr in _dataAttributes}}">
+                <div class="col" label="{{attr}}">{{attr}}</div>
+              </template>
+            </core-selector>
+
+
+          <label for="">Prefix for label: </label> 
+          <input is="core-input" value="{{labelPrefix}}" placeHolder="prefix for label">
+        </core-collapse>
+
+      </div>
+    
+
+      <div class="selection">
+        <a class="collapse-btn function_collapse" href="javascript:void(0)" on-click="{{showCollapse}}">Aggregate functions on Value</a>
+        <core-collapse id="function_collapse">
+            <p class="info">Apply an aggregate function on value column.</p>
+            <label for="func_selector">Select function:<br></label>
+            <core-selector id="func_selector" id="" selected="{{_selectedFunc}}" valueattr="label">
+                      <div class="col" label="none">None</div>
+                      <div class="col" label="frequency">Frequency</div>
+                  <template if="{{_whereColumnNumeric}}">
+                    <template repeat="{{func in _numericFunctions}}">
+                      <div class="col" label="{{func.label}}">{{func.name}}</div>
+                    </template>
+                  </template>
+            </core-selector>
+        </core-collapse>
+      </div>
+
+      
+      <div class="selection">
+        <a class="collapse-btn where_collapse" href="javascript:void(0)" on-click="{{showCollapse}}">Filter rows by criterion</a>
+        <core-collapse id="where_collapse">
+            <th-data-criterion input="{{input}}" included="true"
+            whereClause="{{_whereClause}}" whereOperator="{{_whereOperator}}" whereColumn="{{_whereColumn}}">
+            </th-data-criterion>
+            <!--
+            <p class="info">Apply a filter on another column to norrow down the results.</p>
+            <label for="func_selector">Filter on column:</label>
+            <core-selector id="value_selector" selected="{{_whereColumn}}" valueattr="label">
+                <div class="col" label="none">None</div>
+              <template repeat="{{attr in _dataAttributes}}">
+                <div class="col" label="{{attr}}">{{attr}}</div>
+              </template>
+            </core-selector>
+            <label for="where_ops_selector">where operator:</label>
+            <core-selector id="where_ops_selector" selected="{{_whereOperator}}" valueattr="label">
+                  <div class="col" label="eq">Equal</div>
+
+            </core-selector>
+            <label for="where_ops_selector">criteria:</label>
+            <core-selector id="value_selector" selected="{{_whereClause}}" valueattr="label">
+              <template repeat="{{option in _whereOptions}}">
+                <div class="col" label="{{option.value}}">{{option.value}}-{{option.count}}</div>
+              </template>
+            </core-selector>
+            or
+            <input is="core-input" value="{{_whereClause}}" placeHolder="(e.g. blank or  New York)"></input>
+            -->
+        </core-collapse>
+      </div>
+
+      <div class="selection">
+        <label for="">Rows to pass (0 for all):</label> 
+        <input is="core-input" value="{{numberOfRows}}" placeHolder="Number of Rows">
+
+      </div>
+
     </core-collapse>
 
   </template>
+
+  <script src="../lodash/dist/lodash.js"></script>
 
   <script>
 
@@ -123,6 +213,22 @@ Converts an array of object to data suitable for thelma charts.
 
       _labelPrefix: '',
 
+      _selectedFunc: null,
+
+      _numericFunctions: [  
+              {label:'sum', name: 'Sum'},
+              {label:'avg', name: 'Average'},
+              {label:'stddev', name: 'Standard Deviation'},
+              {label:'variance', name: 'Variance'},
+              {label:'max', name: 'Max'},
+              {label:'min', name: 'Min'}
+            ],
+
+      _whereColumnNumeric: false,
+
+
+
+
 
       ready: function() {
 
@@ -145,7 +251,6 @@ Converts an array of object to data suitable for thelma charts.
             self._dataAttributes = attributes;
             //check if second attribute is numerical
             var firstKeyValue = parseFloat(firstItem[attributes[1]]);
-            console.log(firstKeyValue);
             if(firstKeyValue) {
               self._selectedLabel = attributes[0];
               self._selectedValue = attributes[1];
@@ -171,39 +276,101 @@ Converts an array of object to data suitable for thelma charts.
       },
 
       _selectedValueChanged: function() {
+        var self = this;
+        self._mapChartData();
+        //var plucked = _.pluck(self.input, self._selectedValue);
+        self._whereColumnNumeric = _.every(_.pluck(self.input, self._selectedValue), function(n) {
+         return !isNaN(parseFloat(n)) && isFinite(n);
+        });
+      },
+
+      _selectedFuncChanged: function() {
         this._mapChartData();
+      },
+
+      _whereClauseChanged: function() {
+        this._mapChartData();
+      },
+
+      _whereColumnChanged: function() {
+        this._updateWhereClauses();
       },
 
       _mapChartData: function() {
 
           var self = this;
           var tmp = self.input;
-          if(self.numberOfRows>0) {
-            tmp = tmp.slice(0, self.numberOfRows);
-          }
           if(tmp.lenght==0) {
             return;
           }
-          var ret = tmp.map(function(item) {
-            var floatValue;
-              if(item[self._selectedValue]) {
-                floatValue = item[self._selectedValue].replace(/\D+/g, '');
-                floatValue = parseFloat(floatValue);
-              } else {
-                floatValue = undefined;
-              }
+          var ret = [];
 
-              return {label: self._labelPrefix + " " + item[self._selectedLabel] , value: floatValue, display_value: item[self._selectedValue]  };
-          });
-          console.log(ret);
+          if(self._whereColumn && self._whereColumn!=='none' && self._whereClause && self._whereClause.length>0) {
+            tmp = _.filter(tmp,function(element) {
+              return element[self._whereColumn]===self._whereClause;
+            })
+          }
+          if(self._selectedFunc===null || self._selectedFunc==='none')
+          {
+            ret = tmp.map(function(item) {
+              var floatValue;
+                if(item[self._selectedValue]) {
+                  floatValue = item[self._selectedValue].replace(/\D+/g, '');
+                  floatValue = parseFloat(floatValue);
+                } else {
+                  floatValue = undefined;
+                }
+
+                return {label: self._labelPrefix + " " + item[self._selectedLabel] , value: floatValue, display_value: item[self._selectedValue]  };
+            });
+          }
+          else if (self._selectedFunc!==null && self._selectedFunc==='frequency'){
+
+           
+           ret = _.chain(tmp)
+                .countBy(function(item) { return item[self._selectedValue]; } )
+                .map(function(value, key) { return {'label': key, 'value': value} })
+                .sortBy(function(item) { return item.value})
+                .reverse()
+                .value();
+
+          }
+
+          if(self.numberOfRows>0) {
+            ret = ret.slice(0, self.numberOfRows);
+          }
+
           self.output = ret;
 
+      },
+
+      _updateWhereClauses: function() {
+        var self = this;
+        self._whereOptions = _.chain(self.input)
+                .countBy(function(item) { return item[self._whereColumn]; } )
+                .map(function(value, key) { return {'value': key, 'count': value} })
+                .sortBy(function(item) { return item.count})
+                .reverse()
+                .value();
+        console.log(self._whereOptions);
       },
 
 
       showControls: function(e) {
         this.$.ctrl_collapse.toggle();
       },
+
+      showCollapse: function(e) {
+        var colId = e.target.classList[1];
+        if(colId=='function_collapse' && this.$.label_collapse.opened) {
+          this.$.label_collapse.toggle();
+        }
+        if(colId=='label_collapse' && this.$.function_collapse.opened) {
+          this.$.function_collapse.toggle();
+        }
+        this.$[colId].toggle();
+      },
+
       outputChanged: function(){
         this.fire('th-output-changed', this);
       }

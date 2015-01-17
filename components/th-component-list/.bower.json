@@ -13,11 +13,11 @@
     "web-component-tester": "Polymer/web-component-tester#^2.0.0"
   },
   "homepage": "https://github.com/thelmanews/th-component-list",
-  "_release": "dd106f872f",
+  "_release": "dfcb2f3a66",
   "_resolution": {
     "type": "branch",
     "branch": "master",
-    "commit": "dd106f872f3f3e36f2e41424b21b6e55bb037f65"
+    "commit": "dfcb2f3a6653f5afcb52b4d7615b7507d4daaea9"
   },
   "_source": "git://github.com/thelmanews/th-component-list.git",
   "_target": "*",

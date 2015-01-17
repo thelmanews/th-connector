@@ -73,7 +73,7 @@ Thelma.BarFamilyPrivateStaticMethods = function() {
 
         // label margins and dims
         dims.labels = {};
-        dims.labels.maxLength = d3.max(chartData, function(d){ return  d.label.length;}); 
+        dims.labels.maxLength = d3.max(chartData, function(d){ return  d.label ? d.label.length : 0;}); 
         dims.labels.width = dims.labels.maxLength * 5.25; // This calc works with the font-size 13px
         dims.labels.lines = Math.ceil(dims.labels.maxLength * 8 / dims.bars.width); // Estimates the number of lines for wrapped labels
         dims.labels.height = dims.labels.lines * 16; // Estimates the size of the div to hold labels
@@ -89,7 +89,9 @@ console.log(dims.labels.lines);
           dims.margin.bottom = dims.labels.width/1.7 + dims.margin.label;  
           
           // increase right margin by width of last label
-          dims.margin.right = dims.margin.right + chartData[chartData.length-1].label.length*5; 
+          var lastLabel = chartData[chartData.length - 1].label,
+              lastLabelLength = lastLabel ? lastLabel.length : 0;
+          dims.margin.right = dims.margin.right + lastLabelLength*5; 
           
       } else {
           dims.labels.angle = 0;
@@ -210,7 +212,7 @@ Thelma.chartUtils = {
               dims = polymerObj.dims;
           
           dims.labels = {};
-          dims.labels.maxLength = d3.max(chartData, function(d){ return  d.label.length;}); 
+          dims.labels.maxLength = d3.max(chartData, function(d){ return  d.label ? d.label.length : 0;}); 
           dims.labels.width = dims.labels.maxLength * 5.25; // This calc works with the font-size 13px
 
           // If labels are long, angle them and adjust margin 
@@ -274,7 +276,7 @@ Thelma.chartUtils = {
         remainingWidth -= dims.margin.label*2 + dims.bar.width;
 
         // Estimate length of labels and calculate width/height of container given word wrap
-        dims.labels.maxLength = d3.max(chartData, function(d){ return  d.label.length;}); // in number of characters
+        dims.labels.maxLength = d3.max(chartData, function(d){ return d.label ? d.label.length : 0;}); // in number of characters
         dims.labels.width = dims.labels.maxLength * 8.25; // in estimated pixels 
         dims.labels.containerWidth = remainingWidth/2;  
         dims.labels.lines = Math.ceil(dims.labels.width / dims.labels.containerWidth); // estimate # of lines given container width
@@ -319,12 +321,30 @@ Thelma.chartUtils = {
 
       return colors;
     },
-    addMoreColors: function(polymerObj){
+ 
+     addMoreColors: function(polymerObj){
       var newAccents = polymerObj.colors.accents.map(function(color){
         
-        var color = color,
-            lum = 0.3, // represents % lighter or darker (negative values are darker)
-            hex = "#", c, i;
+        return Thelma.chartUtils.changeBrightness(color, 0.3);
+      });
+
+      // add new colors to accents array
+      polymerObj.colors.accents = polymerObj.colors.accents.concat(newAccents);
+
+      // update total count of colors
+      polymerObj.colors.count = polymerObj.colors.accents.length; 
+      
+      return polymerObj.colors.accents;
+    },
+    /**
+     * changes the brigthness of color
+     * @param  {string} color hex color to change the brightness
+     * @param  {[type]} lum   number between -1 and 1. the percentage of brightness change
+     * @return {[type]}       new color
+     */
+    changeBrightness: function(color, lum) {
+
+        var hex = "#", c, i;
         
         // validate color and make it always 6 chars 
         color = String(color).replace(/[^0-9a-f]/gi, '');
@@ -340,16 +360,7 @@ Thelma.chartUtils = {
         }
 
         return hex;
-        
-      });
 
-      // add new colors to accents array
-      polymerObj.colors.accents = polymerObj.colors.accents.concat(newAccents);
-
-      // update total count of colors
-      polymerObj.colors.count = polymerObj.colors.accents.length; 
-      
-      return polymerObj.colors.accents;
     },
     setDisplayVals: function(polymerObj){
       var data = polymerObj.chartData;

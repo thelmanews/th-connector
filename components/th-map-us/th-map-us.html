@@ -419,6 +419,39 @@
 
 		   },
 
+		   resize: function() {
+
+		   		var self = this;
+
+
+		   		self.dims = self.setupDimensions(self);
+
+
+            	var width = self.dims.width,
+            		height = self.dims.height;
+            
+	            // projection and path setup
+	            var projection = d3.geo.albersUsa()
+	                .scale(width)
+	                .translate([width / 2, height / 2]);
+	            
+	            self.path = d3.geo.path()
+	                .projection(projection);
+            
+			    var chart_svg = self.$.chart;
+
+
+		      	self.svg.style('height', height + 'px')
+	                .style('width', width + 'px');
+
+
+				self.states.attr('d', self.path)	                
+
+
+
+
+		   },
+
 		   updateData: function() {
 		   	var self = this;
 		   	self._render(self.animate);

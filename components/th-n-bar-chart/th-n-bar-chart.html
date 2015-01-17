@@ -335,7 +335,7 @@
                : height - y(d.value) - self.dims.values.margin;  // data>0 valye on top of the chart
           })
           .style('opacity', 1)
-          .text(function(d){ return d.display_value ? d.display_value : d.value});
+          .text(function(d){ return d.display_value ? d.display_value : d.value.toFixed(2).replace(/[.,]00$/, "");});
           
 
         if (self.wrapLabels){
@@ -536,7 +536,6 @@
       },
 
       updateData: function() {
-
           var self = this;
                   // Adjust margins for changes in labels and values
         self.dims = staticObj.setupBarLabelDims(self.dims, self.chartData, 1, 1.3, self.wrapLabels);
@@ -660,6 +659,10 @@
                   "version": "0.0.1",
                   "thumbnail":"nbar.jpg", 
                   "tags":["chart", "bar"],
+                  "fields":[{ "name":"label", "type":"string", "required":true},
+                            { "name":"value", "type":"num", "required":true},
+                            { "name":"display_value", "type":"string"}
+                  ],
                   "inputAttr": {
                     "chartData":{"friendly":"Data", "type":"table-repeating","rows":2, 
                       "fields":{

@@ -29,7 +29,7 @@ Element providing the ability to create maps with the Mapbox API.
     <core-style ref="theme"></core-style>
     <style>
        :host {
-         width: 280px;
+         width: 100%;
          height: 500px;
        }
 
@@ -87,11 +87,14 @@ Element providing the ability to create maps with the Mapbox API.
       startingZoom: 12,
       geolocation: false,
       geolocateZoom: 10,
-      showSwipeBar: true,
+      showSwipeBar: false,
       ready: function(){
         var self = this;
 
         if (self.accessToken){
+          self._createMap();
+        } else {
+          self.accessToken="pk.eyJ1IjoidGhlbG1hIiwiYSI6Ikd3RUlsTTQifQ.i6bojdSBKd6JHENLKsRjTA";
           self._createMap();
         }
         

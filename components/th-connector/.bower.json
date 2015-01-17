@@ -30,14 +30,13 @@
     "webcomponentsjs": "^0.5.0"
   },
   "homepage": "https://github.com/thelmanews/th-connector",
-  "_release": "8e3cdb5cb5",
+  "_release": "578442cf74",
   "_resolution": {
     "type": "branch",
     "branch": "master",
-    "commit": "8e3cdb5cb5599c503c525429a5fc522783862c92"
+    "commit": "578442cf74e5cdd1acdd4a3f2150233d50e8e5bd"
   },
   "_source": "git://github.com/thelmanews/th-connector.git",
   "_target": "master",
-  "_originalSource": "thelmanews/th-connector",
-  "_direct": true
+  "_originalSource": "thelmanews/th-connector"
 }

@@ -116,7 +116,6 @@
 
     </style>
     <link rel="stylesheet" href="../sortable-table/css/bootstrap.css" shim-shadowdom>
-    <span class="elTitle">th-enigma</span>
 
     <core-icon-button icon="perm-data-setting" on-click="{{showControls}}"></core-icon-button>
     <core-icon-button icon="view-list" on-click="{{showResults}}" class="{{ {disabled: !hasData} | tokenList}}"></core-icon-button>
@@ -125,11 +124,11 @@
         <div class="controls">
           <div class="row">
             <label>API Key:</label> 
-            <core-input class="long-input" value="{{apiKey}}"></core-input>
+            <input is="core-input" class="long-input" value="{{apiKey}}">
           </div>
           <div class="row"> 
             <label>Dataset:</label>
-            <core-input class="long-input" value="{{dataSet}}"></core-input>
+            <input is="core-input" class="long-input" value="{{dataSet}}">
           </div>
 
 
@@ -232,10 +231,16 @@
 
 
           var self = this;
-          var url = self._ENIGMA_API_PATH+self._STATS_PATH+self.apiKey+
-                    "/"+self.dataSet+
-                    "?select="+self._selectedCols+
-                    "&operation="+self._selectedFunc;
+          var url = self._ENIGMA_API_PATH;
+          if(self._selectedCols==='all') {
+            url = url +self._DATA_PATH+self.apiKey+"/"+self.dataSet;
+          } 
+          else {
+            url = url + self._STATS_PATH+self.apiKey+
+                      "/"+self.dataSet+
+                      "?select="+self._selectedCols+
+                      "&operation="+self._selectedFunc;
+          }
           console.log(url);
           self._makeCORSCall(url, self._displayReturnedData);
 
@@ -252,6 +257,24 @@
              self.$.table.columns = [];
              if(data.result.frequency) {
                 self.output = data.result.frequency;
+             }
+             else if (self._selectedCols==='all') {
+                //when all data is selected
+                /*
+                for(key in data.result) {
+                  if(key==0) {
+                    var keys = [];
+                    for(var k in data.result[key]) keys.push(k);
+                   // self.output.push(keys);
+                  }
+                  var vals = [];
+                  for(var k in data.result[key]) vals.push(data.result[key][k]);
+                  self.output.push(vals);
+                }
+                */
+               
+               self.output = data.result;
+
              }
              else {
                 for(key in data.result) {
@@ -277,8 +300,9 @@
         },
         _displayMetaData: function(data) {
             var self = this;
-            console.log(data);
             self._columns = data.result.columns;
+
+            self._columns.unshift({id: 'all',label: 'All Data (columns)'});
             
 
         },
