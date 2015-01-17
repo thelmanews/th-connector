@@ -1,0 +1,104 @@
+<link rel="import" href="../polymer/polymer.html"> 
+
+<!--
+A Thelma component providing solution to no problem in particular.
+
+##### Example
+
+    <th-data-split></th-data-split>
+
+@element th-data-split
+@blurb Element providing solution to no problem in particular.
+@status alpha
+@homepage http://thelmanews.github.io/th-data-split
+-->
+
+<polymer-element name="th-data-split" attributes="input output">
+  <template>
+    <link rel="stylesheet" href="th-data-split.css">
+
+    <template if="{{!included}}">
+      <core-icon-button icon="perm-data-setting" on-click="{{showControls}}"></core-icon-button>
+    </template>
+
+    <core-collapse id="ctrl_collapse">      
+
+            <p class="info">Apply a filter on another column to norrow down the results.</p>
+            <label for="func_selector">Filter on column:</label>
+            <core-selector id="value_selector" selected="{{splitColumn}}" valueattr="label">
+              <template repeat="{{attr in _dataAttributes}}">
+                <div class="col" label="{{attr}}">{{attr}}</div>
+              </template>
+            </core-selector>
+            <label>split by:</label>
+            <input is="core-input" value="{{splitChar}}" >
+
+  </template>
+  <script>
+    Polymer({
+      splitChar: ',',
+      ready: function () {
+        //open the collapse if it the component is included
+        if(this.included && !this.$.ctrl_collapse.opened) {
+          this.$.ctrl_collapse.toggle();
+        }
+      },
+      inputChanged: function() {
+
+          var self = this;
+          var firstItem = self.input[0];
+          if(!firstItem) {
+            return;
+          }
+          var attributes = Object.keys(firstItem);
+          
+          if(JSON.stringify(self._dataAttributes) === JSON.stringify(attributes) ) {
+            //self._mapChartData();
+          }
+          else {
+            self._dataAttributes = attributes;
+          }
+
+          self._calculateOutput();          
+
+      }, 
+
+      _calculateOutput: function() {
+
+        var self = this;
+        if(self.splitColumn && self.splitChar && self.splitChar.length>0)
+        {
+          if(typeof self.input[0][self.splitColumn]==="string") {  //TODO: catch exception for split instead?
+
+            self.output = self.input.map(function(item) {
+              var splits = item[self.splitColumn].split(self.splitChar);
+              splits.forEach(function(split, index) {
+                item['split'+index] = splits[index].trim();
+              });
+              return item;
+
+            });
+
+          }
+          else {
+            //error
+          }
+        }
+
+      },     
+
+      showControls: function(e) {
+        this.$.ctrl_collapse.toggle();
+      },
+      splitColumnChanged: function(e) {
+        var self= this;
+
+
+        self._calculateOutput();
+
+      }
+
+
+    });
+  </script>
+</polymer-element>
