@@ -145,7 +145,7 @@
 
 
       .wrapper {
-        border: 3px solid #eee;
+        border: 2px solid #eee;
         display: inline-block;
         position: absolute;
         margin: 30px 20px;
@@ -290,6 +290,7 @@
         position: fixed;
         max-height: 100px;
         overflow-y: scroll;
+        overflow-x: hide;
         z-index: 100;
         width: 100%;
         background-color: rgba(255,255,255,0.9);
@@ -315,6 +316,6 @@
       }
 
       .sel-element {
-        border-width: 5px;
+        border: 2px solid #888;
         z-index: 200;
       }

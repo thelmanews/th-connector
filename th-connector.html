@@ -6,10 +6,11 @@
 <link rel="import" href="../core-menu/core-menu.html">
 <link rel="import" href="../core-item/core-item.html">
 <link rel="import" href="../th-theme/th-theme.html">
-<!-- <link rel="import" href="../aha-table/dist/aha-table.html">
- -->
-<link rel="import" href="../sortable-table/sortable-table.html">
 
+ <link rel="import" href="../th-data-table/th-data-table.html">
+  
+<!-- <link rel="import" href="../th-data-table/th-data-table.html">
+ -->
 <polymer-element name="th-connector" attributes="componentList">
   <core-style id="core_style" ref="theme"></theme>
   <template>
@@ -19,9 +20,9 @@
     </div>
 
     <div id="input_preview" class="data-preview">
-      <template if="{{_selElement.input}}">
+      <template if="{{_selElement.input && _selElement.input.length>0}}">
         <label>selected component input</label>
-        <sortable-table class="table" data="{{_selElement.input}}"></sortable-table>
+        <th-data-table id="input_table" input="{{_selElement.input}}" class="table"  minimal="true"></th-data-table>
       </template>
     </div>
 
@@ -67,9 +68,9 @@
     </div>
 
     <div id="output_preview" class="data-preview">
-      <template if="{{_selElement.output}}">
+      <template if="{{_selElement.output && _selElement.output.length>0}}">
         <label>selected component output</label>
-        <sortable-table class="table" data="{{_selElement.output}}"></sortable-table>
+        <th-data-table id="output_table" input="{{_selElement.output}}" class="table"  minimal="true"></th-data-table>
       </template>
     </div>
 
@@ -613,6 +614,13 @@
           elementId = elementId.substring(8, elementId.length);
 
           this._selElement = this.findElById(elementId).element;
+
+          // if(this.$.input_table) {
+          //   this.$.input_table.input = this._selElement.input;
+          // }
+          // if(this.$.output_table) {
+          //   this.$.output_table.input = this._selElement.output;
+          // }
 
         }, 
         dragStart: function(e, detail, selection){
