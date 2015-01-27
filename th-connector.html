@@ -7,6 +7,9 @@
 <link rel="import" href="../core-item/core-item.html">
 <link rel="import" href="../th-theme/th-theme.html">
 
+<link rel="import" href="../th-chart-editor/th-chart-editor.html">
+
+
  <link rel="import" href="../th-data-table/th-data-table.html">
   
 <!-- <link rel="import" href="../th-data-table/th-data-table.html">
@@ -38,6 +41,7 @@
           <label>{{el.name}}</label>
           <!--<core-icon-button icon="clear" class="deleteEl {{el.element.id}}" on-click="{{_deleteElement}}"></core-icon-button> -->
           <div  class="deleteEl" component_id="{{el.element.id}}" on-click="{{_deleteElement}}">X</div>
+          <!--<th-chart-editor id="edit-pen" targetPath="#{{el.element.id}}"></th-chart-editor>-->
            
           <div class="connectors-in" >
             <!-- Input -->
