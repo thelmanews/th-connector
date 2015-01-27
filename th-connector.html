@@ -114,6 +114,9 @@
         _targetElementSelection: null,
         _targetPropertySelection: null,
         _connections: [], 
+        ready: function() {
+          this._updateFields();
+        },
         domReady: function() {
           var self = this;
 
@@ -124,9 +127,10 @@
           self.defaultColor = '#555';
           self.colors = self.getThemeColors();
 
+          self._arrangeComponents();
+
           self._updateFields();
 
-          self._arrangeComponents();
 
           self.watchMutation();
 
@@ -196,15 +200,26 @@
           //TODO don't recreate wrappers!!!!!
 
           //self._elements = [];
+          //
+          console.log('$$$$$$$$$$ UPDATE FEILDS');
+
+            var currentY = 0;
+            var prevRowHeight = 0;
+            var prevWidth = 0;
+
 
           var components = self.querySelectorAll('*'); 
+          console.log('components', components);
           [].forEach.call(components, function(el, i) {
 
               
               // if element already processed, ignore...
               var alreadyInElements = self._elements.filter(function(item) {
+                //console.log('item.top',item.top);
                 return el.id && el.id===item.id;
               });
+
+              //console.log('alreadyInElements',alreadyInElements, alreadyInElements.top, el.getAttribute('_top'), el.getAttribute('_left'));
               if(alreadyInElements.length>0) {
                 //return e.g. continue the loop
                 return;
@@ -226,6 +241,44 @@
               var droppedTop = el.getAttribute('_top'),
                   droppedLeft = el.getAttribute('_left');
 
+              if(droppedTop===null || droppedLeft===null) {
+                //then arange components:
+                
+                //if(!el.style.top || !el.style.left) {
+                
+                  /*
+
+                  prevWidth = parseInt(window.getComputedStyle(el).width.replace('px',''));
+                  if(i%2 == 0) {
+                    currentY += prevRowHeight + 40;
+                    prevRowHeight = 0;
+                    prevWidth = 0;
+
+                  }
+                  var height = parseInt(window.getComputedStyle(el).height.replace('px',''));
+
+                  console.log('prevWidth, height, currentY'+prevWidth, height, currentY);
+
+                  prevRowHeight = Math.max(prevRowHeight, height);
+                  //el.style.top = currentY+'px';
+                  //el.style.left = (prevWidth+ (prevWidth!==0 ? 150 : 0))+'px';
+                  //el.style.zIndex = wrappers.length-i;
+                  //
+
+                  */
+                 
+                  droppedTop = (Math.ceil(i/2) * 200) ;   ///currentY+'px';
+                  droppedLeft =  (i%2 * 200) ;//(prevWidth+ (prevWidth!==0 ? 150 : 0))+'px';
+
+
+                  
+
+               // }
+
+              }    
+
+              console.log('!!!!!!!!!!!!! droppedTop',i , droppedTop, droppedLeft);
+
               //set element width and height to 100% so it takes the whole wrapper area.
               el.style.width = '100%';
               el.style.height = '100%';
@@ -243,16 +296,20 @@
 
               }
               */
-
-
-              self._elements.push({  element: el, 
+             
+             var elItem = {  element: el, 
                                     id: el.id,
                                     name: elName, 
                                     outputReady: false,
                                     inputReady: false,
                                     top: droppedTop,
                                     left: droppedLeft
-                                });
+                                };
+
+                          console.log('elItem', elItem);
+
+
+              self._elements.push(elItem);
               
 
 
@@ -260,9 +317,9 @@
           
           });
 
-          for (var i=0; i<self._elements.length; i++){
-            self._elements[i].color = self.colors.accents[i];
-          }
+          // for (var i=0; i<self._elements.length; i++){
+          //   self._elements[i].color = self.colors.accents[i];
+          // }
 
 
 
@@ -276,12 +333,12 @@
         _arrangeComponents: function() {
 
           var self = this;
-
+/*
           setTimeout(function() {
 
             var currentY = 0;
-            prevRowHeight = 0;
-            prevWidth = 0;
+            var prevRowHeight = 0;
+            var prevWidth = 0;
 
             var wrappers = self.shadowRoot.querySelectorAll('.wrapper');
             [].forEach.call(wrappers, function(el, i) {
@@ -311,7 +368,7 @@
             
             });
           }, 100);
-
+*/
         },
 
         _displayFields: function(selector) {
@@ -350,7 +407,7 @@
           var self = this;
           //selection.style.border = "3px solid "+this.colors.accents[this.draggedEl.id];
           
-          selection.style.borderLeftColor = this.colors.accents[this.draggedEl.id];
+          //selection.style.borderLeftColor = this.colors.accents[this.draggedEl.id];
 
           var source = self.findElById(self.draggedEl.classList[0])
           var target = self.findElById(selection.classList[0])
@@ -430,12 +487,20 @@
           
           for (var i = 0; i < self._connections.length; i++) {
 
+
             var conn = self._connections[i];
-            var srcEl = conn.source.element;
-            var targetEl = conn.target.element;
+
+            //console.log(conn.source.id, self.querySelector('#'+conn.source.id))
+
+            var srcEl = conn.source.element || self.querySelector('#'+conn.source.id); //TODO do this in initialization method
+            var targetEl = conn.target.element || self.querySelector('#'+conn.target.id);
+
+            console.log(conn, srcEl, targetEl);
 
             var srcWrapper = self.shadowRoot.querySelector('#wrapper-'+srcEl.id);
             var targetWrapper = self.shadowRoot.querySelector('#wrapper-'+targetEl.id);
+
+            console.log('wrappers ',srcWrapper, targetWrapper);
 
             // var srcRect = srcEl.getBoundingClientRect();
             // var targetRect = targetEl.getBoundingClientRect();
@@ -443,13 +508,19 @@
             var srcRect = srcWrapper.getBoundingClientRect();
             var targetRect = targetWrapper.getBoundingClientRect();
 
+
             var svgRect = self.$.svg.getBoundingClientRect();
+
+            console.log('rects', srcRect, targetRect, svgRect);
 
 
             var startX = srcRect.right - svgRect.left + arrowOffsetX; //srcRect.left + srcRect.width + 30 - containerOffsetX;
             var startY = srcRect.top - svgRect.top + arrowOffsetY;
             var endX = targetRect.left  - svgRect.left - arrowOffsetX;
             var endY = targetRect.top  - svgRect.top + arrowOffsetY;
+
+            console.log('curve', startX, startY, endX, endY , bezierCurveX);
+
             self._addBezierPath(startX, startY, endX, endY , bezierCurveX);
             
           }        
@@ -594,13 +665,13 @@
         },
 
         checkForInputAttr: function(value){
-          return Object.keys(value).indexOf("input") > -1 ? true : false;
+          return value && Object.keys(value).indexOf("input") > -1 ? true : false;
         },
         checkForOutputAttr: function(value){
-          return Object.keys(value).indexOf("output") > -1 ? true : false;
+          return value && Object.keys(value).indexOf("output") > -1 ? true : false;
         },
         checkForNoOutputAttr: function(value){
-          return Object.keys(value).indexOf("output") > -1 ? false : true;
+          return value && Object.keys(value).indexOf("output") > -1 ? false : true;
         },
         wrapperClicked: function(e, detail, selection) {
           var wrapperEl = selection;
@@ -670,7 +741,7 @@
           }
 
         },
-
+        /*
         listClicked: function(e, detail, selection) {
           console.log(selection, e);
           // better way to position them?
@@ -678,10 +749,11 @@
               y = e.offsetY + 200 + Math.round(Math.random()*400);
           this.addNewElToConnector(selection.classList[0], x, y);
         },
+        */
         dragOver: function(e, detail, selection){
           //selection.style.border = "3px solid "+this.colors.accents[this.draggedEl.id]; 
         if(this.draggedEl) {	
- 	          selection.style.borderLeftColor = this.colors.accents[this.draggedEl.id];
+ 	          //selection.style.borderLeftColor = this.colors.accents[this.draggedEl.id];
          }
           e.preventDefault(); // allows drop event on this element
 
