@@ -211,25 +211,7 @@
 
 
         },
-        set elements(elements) {
-          console.log('------------------------------------------------ setter');
-          /*
-          elements.forEach(function(newElemenet) {
-            var alreadyInElements = self._elements.filter(function(item) {
-              //console.log('item.top',item.top);
-              return newElemenet.id && newElemenet.id===item.id;
-            });
 
-            console.log('alreadyInElements',alreadyInElements);
-            if(alreadyInElements.length>0 ) {
-              //return e.g. continue the loop
-              return;
-            }
-          });
-          */
-
-          this._elements = elements;
-        },
         _processChildren: function() {
           var self = this;
           var boringTags = ['div','ul','li','span','th-editor','br'];
@@ -238,7 +220,6 @@
 
           //self._elements = [];
           //
-          console.log('$$$$$$$$$$ UPDATE FEILDS');
 
             var currentY = 0;
             var prevRowHeight = 0;
@@ -246,7 +227,6 @@
 
 
           var components = self.querySelectorAll('*'); 
-          console.log('components', components, this._elements);
 
           //when there are child components not in the _elements
           if(components.length> self._elements.length) {
@@ -370,10 +350,7 @@
                 elementInArray.element = component;
               }
             });
-           // setTimeout(function() {
-              this._positioned = true;
-              console.log('positioned true');
-           // }.bind(this),1000)
+            this._positioned = true;
 
           }
 
@@ -449,7 +426,7 @@
               connection.target.element = this.queryChildrenById(connection.target.id);
             }
             console.log(connection);
-            this._connectAttributes(connection.source, 'input', connection.target, 'output');
+            this._connectAttributes(connection.source, 'output', connection.target, 'input');
           }.bind(this));
 
           this._drawConnections();
@@ -492,13 +469,15 @@
           
           //selection.style.borderLeftColor = this.colors.accents[this.draggedEl.id];
 
-          var source = self.findElById(self.draggedEl.classList[0])
-          var target = self.findElById(selection.classList[0])
+          var source = self.findElById(self.draggedEl.classList[0]);
+          var target = self.findElById(selection.classList[0]);
 
-          if(this._connectAttributes(source,'input',target,'output')) {
+          console.log('find by id results ', source, target, self.draggedEl.classList[0], selection.classList[0], self._elements );
+
+          this._connectAttributes(source,'output',target,'input')
   //           self._connections.push({source: source, target: target});
 
-          }
+         // }
 
           self._drawConnections();
           
@@ -540,18 +519,19 @@
             //target.inputConnectedTo = source;  // not needed
               
             var observer = new PathObserver(source.element, sourceField);  
-            console.log('observe created for ', source.element);   
-               observer.open(function(newValue, oldValue) {
+              
+            observer.open(function(newValue, oldValue) {
               console.log('observe', newValue, oldValue);
                target.element[targetField] = newValue;
             });
 
-            // to set the value when elements are connected
+
             
-            target.element[targetField] = source.element[sourceField];  
+            target.element[targetField] = source.element[sourceField]; 
 
             //self.updateConnections();
-            //
+            
+            //push the connections anyways because it will be deleted above.
             self._connections.push({source: source, target: target});
 
             console.log('connection made....', self._connections);
@@ -574,7 +554,6 @@
           //clear all paths. since it is not done offten it is fine to do it in a not optimized way
           self.$.svg.innerHTML = '';
 
-          console.log('draw connections', self._connections, self._connections.length);
           for (var i = 0; i < self._connections.length; i++) {
 
 
@@ -585,12 +564,10 @@
             var srcEl = conn.source.element || self.querySelector('#'+conn.source.id); //TODO do this in initialization method
             var targetEl = conn.target.element || self.querySelector('#'+conn.target.id);
 
-            console.log(conn, srcEl, targetEl);
 
             var srcWrapper = self.shadowRoot.querySelector('#wrapper-'+srcEl.id);
             var targetWrapper = self.shadowRoot.querySelector('#wrapper-'+targetEl.id);
 
-            console.log('wrappers ',srcWrapper, targetWrapper);
 
             // var srcRect = srcEl.getBoundingClientRect();
             // var targetRect = targetEl.getBoundingClientRect();
@@ -601,7 +578,6 @@
 
             var svgRect = self.$.svg.getBoundingClientRect();
 
-            console.log('rects', srcRect, targetRect, svgRect);
 
 
             var startX = srcRect.right - svgRect.left + arrowOffsetX; //srcRect.left + srcRect.width + 30 - containerOffsetX;
@@ -609,7 +585,6 @@
             var endX = targetRect.left  - svgRect.left - arrowOffsetX;
             var endY = targetRect.top  - svgRect.top + arrowOffsetY;
 
-            console.log('curve', startX, startY, endX, endY , bezierCurveX);
 
             self._addBezierPath(startX, startY, endX, endY , bezierCurveX);
             
@@ -660,7 +635,6 @@
           //var target = self.findElById(self.draggedEl.classList[0]);
           
           var targetId = self.draggedEl.classList[0];
-          console.log(targetId);
 
           // Check if it has a connection
           // 
@@ -687,7 +661,6 @@
             return conn.target.id!==target.id;
           });
 
-          console.log(self._connection);
           
           self._drawConnections();
         },
@@ -700,7 +673,6 @@
         watchMutation: function() {
             var change = function() {
 
-              console.log('on mutationon mutationon mutationon mutationon mutationon mutation', this._elements);
 
               this._processChildren();
 
@@ -747,7 +719,6 @@
             return !(conn.source.id===elId || conn.target.id === elId)
              
           });
-          console.log('goods',goodConnections);
 
           self._connections = goodConnections;
 
@@ -864,7 +835,6 @@
         droppedInContainer: function(e, detail, selection){
           var self = this;
 
-          console.log('dropeed in container');
           // for wrapper move. is it better to use dataTransfer instead of self.draggedEl for anchor as well? (below)
           var dataTransfer = e.dataTransfer.getData('text/plain');
 
@@ -892,16 +862,21 @@
 
 
             var elementId = wrapper.id.substring(8, wrapper.id.length);
-            console.log(elementId);
 
             var element = self.findElById(elementId);
+
+            //wrapper.style.left = left;
+            //wrapper.style.top = top;
 
             element.top = top;
             element.left = left;
 
-            console.log('element ', element, wrapper);
 
-            self._drawConnections();
+            setTimeout(function() {
+              self._drawConnections();
+
+            },50)
+
 
             e.preventDefault(); 
             return false; 
