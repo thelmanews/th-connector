@@ -124,33 +124,46 @@
 
         }
 
-        elementsJSON = JSON.stringify(elements, removeDomObjects);
+        var elementsJSON = JSON.stringify(elements, removeDomObjects);
 
-        connectionsJSON = JSON.stringify(connections , removeDomObjects);
+        var connectionsJSON = JSON.stringify(connections , removeDomObjects);
 
 
         console.log('elements ',elementsJSON);
         console.log('connections', connectionsJSON);
 
 
-        console.log('###################### RECREATE ######################################');
-
         connector.remove();
 
-
           var newConnector = document.createElement('th-connector');
+
+          console.log('~~~~~~ elements right after creation', newConnector._elements);          
+
+        console.log('###################### RECREATE ######################################');
+
+
+        setTimeout(function() {
+
           document.body.appendChild(newConnector);
 
-            // newConnector._elements = JSON.parse(elementsJSON);
+          var elements = JSON.parse(elementsJSON);
 
 
-          newConnector._elements.forEach(function(el) {
+
+
+          elements.forEach(function(el) {
             console.log(el);
             var domEl =  document.createElement(el.name);
             domEl.id = el.id;
-            newConnector.appendChild(domEl)
-            
+            newConnector.appendChild(domEl);
+
           });
+
+          setTimeout(function() {
+                      newConnector._elements = elements;
+          }, 1000)
+
+
        
           newConnector._connections = JSON.parse(connectionsJSON);
       //    
@@ -160,16 +173,15 @@
 
          
 
-         newConnector._drawConnections()
+          newConnector._drawConnections()
 
           console.log('after ', newConnector);
 
-        setTimeout(function() {
 
         },1000);
 
 
-      }, 8000);
+      }, 5000);
 
     });
 </script>

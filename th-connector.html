@@ -115,7 +115,12 @@
         _targetPropertySelection: null,
         _connections: [], 
         ready: function() {
+          this._elements = [];
+          console.log('~~~~~~ elements ready', this._elements);
           this._updateFields();
+
+          //here or domready
+          this.watchMutation();
         },
         domReady: function() {
           var self = this;
@@ -124,15 +129,22 @@
           //self.showControls();
           
           // Set colors
+          
+          /*
           self.defaultColor = '#555';
           self.colors = self.getThemeColors();
+          */
+         
+         console.log('~~~~~~ elements', this._elements);
 
           self._arrangeComponents();
 
           self._updateFields();
 
 
-          self.watchMutation();
+          //self.watchMutation();
+
+         console.log('~~~~~~ elements after', this._elements);
 
 
           self.addEventListener('core-resize', function() {
@@ -610,6 +622,8 @@
         watchMutation: function() {
             var change = function() {
 
+              console.log('on mutationon mutationon mutationon mutationon mutationon mutation', this._elements);
+
               this._updateFields();
 
               this.onMutation(this, change);
@@ -792,8 +806,22 @@
             var wrapper = self.shadowRoot.querySelector('#'+dataSeg[2]);
             
             
-            wrapper.style.left = (e.clientX + parseInt(dataSeg[0],10)) + 'px';
-            wrapper.style.top = (e.clientY + parseInt(dataSeg[1],10)) + 'px';
+            // wrapper.style.left = (e.clientX + parseInt(dataSeg[0],10)) + 'px';
+            // wrapper.style.top = (e.clientY + parseInt(dataSeg[1],10)) + 'px';
+            
+            var left = (e.clientX + parseInt(dataSeg[0],10)),// + 'px',
+                top = (e.clientY + parseInt(dataSeg[1],10));// + 'px';
+
+
+            var elementId = wrapper.id.substring(8, wrapper.id.length);
+            console.log(elementId);
+
+            var element = self.findElById(elementId);
+
+            element.top = top;
+            element.left = left;
+
+            console.log('element ', element, wrapper);
 
             self._drawConnections();
 
