@@ -137,7 +137,6 @@
 
           var newConnector = document.createElement('th-connector');
 
-          console.log('~~~~~~ elements right after creation', newConnector._elements);          
 
         console.log('###################### RECREATE ######################################');
 
@@ -159,21 +158,15 @@
 
           });
 
-          setTimeout(function() {
-                      newConnector._elements = elements;
-          }, 1000)
 
 
        
-          newConnector._connections = JSON.parse(connectionsJSON);
-      //    
-       //  console.log(newConnector._elements);
-         console.log(newConnector._connections);
+          //newConnector._connections = JSON.parse(connectionsJSON);
+  
 
+          newConnector.setConnections(JSON.parse(connectionsJSON));         
 
-         
-
-          newConnector._drawConnections()
+          //newConnector._drawConnections()
 
           console.log('after ', newConnector);
 

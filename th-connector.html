@@ -31,39 +31,41 @@
 
 
       <!-- Components and connector dots --> 
-      <template repeat="{{el, index in _elements}}">
-        <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" on-click="{{wrapperClicked}}" on-dragStart="{{dragStartWrapper}}" 
-        on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" 
-        style="top: {{el.top}}px; left: {{el.left}}px" draggable="true">
-          <label>{{el.name}}</label>
-          <!--<core-icon-button icon="clear" class="deleteEl {{el.element.id}}" on-click="{{_deleteElement}}"></core-icon-button> -->
-          <div  class="deleteEl" component_id="{{el.element.id}}" on-click="{{_deleteElement}}">X</div>
-           
-          <div class="connectors-in" >
-            <!-- Input -->
-            <template if="{{el.element.publish | checkForInputAttr}}">
-              <li class="{{el.element.id}} inputMarker" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{_connectBubble}}" draggable="true"></li>
-              
-            </template>
+      <template if="{{_positioned}}">
+        <template repeat="{{el, index in _elements}}">
+          <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" on-click="{{wrapperClicked}}" on-dragStart="{{dragStartWrapper}}" 
+          on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" 
+          style="top: {{el.top}}px; left: {{el.left}}px" draggable="true">
+            <label>{{el.name}}</label>
+            <!--<core-icon-button icon="clear" class="deleteEl {{el.element.id}}" on-click="{{_deleteElement}}"></core-icon-button> -->
+            <div  class="deleteEl" component_id="{{el.element.id}}" on-click="{{_deleteElement}}">X</div>
+             
+            <div class="connectors-in" >
+              <!-- Input -->
+              <template if="{{el.element.publish | checkForInputAttr}}">
+                <li class="{{el.element.id}} inputMarker" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{_makeConnection}}" draggable="true"></li>
+                
+              </template>
 
-            <!-- Output -->
+              <!-- Output -->
+            </div>
+            <content select="#{{el.id}}"></content>
+            <div class="connectors-out" >
+              <template if="{{el.element.publish | checkForOutputAttr}}">
+                <li id="{{index}}"  class="{{el.element.id}} outputMarker" on-dragStart="{{dragStartOutput}}" on-drag="{{drag}}" on-dragEnd="{{dragEnd}}"  draggable="true" style="border-left-color: {{el.outputReady ? el.color : defaultColor}}; "></li>
+              </template>
+              
+            </div>
+            <div class="final-result-buttons">
+              <template if="{{el.element.publish | checkForNoOutputAttr}}">
+                <li id="{{index}}"  class="{{el.element.id}} checkmark"  draggable="true" on-click="{{setAsFinalResult}}" title="Set as final result">
+                  <core-icon-button icon="check"></core-icon-button>
+                </li>
+              </template>
+            </div>
+            <div class="resize"  draggable="true"  on-drag="{{dragResize}}" on-dragEnd="{{dragResizeEnd}}"></div>
           </div>
-          <content select="#{{el.element.id}}"></content>
-          <div class="connectors-out" >
-            <template if="{{el.element.publish | checkForOutputAttr}}">
-              <li id="{{index}}"  class="{{el.element.id}} outputMarker" on-dragStart="{{dragStartOutput}}" on-drag="{{drag}}" on-dragEnd="{{dragEnd}}"  draggable="true" style="border-left-color: {{el.outputReady ? el.color : defaultColor}}; "></li>
-            </template>
-            
-          </div>
-          <div class="final-result-buttons">
-            <template if="{{el.element.publish | checkForNoOutputAttr}}">
-              <li id="{{index}}"  class="{{el.element.id}} checkmark"  draggable="true" on-click="{{setAsFinalResult}}" title="Set as final result">
-                <core-icon-button icon="check"></core-icon-button>
-              </li>
-            </template>
-          </div>
-          <div class="resize"  draggable="true"  on-drag="{{dragResize}}" on-dragEnd="{{dragResizeEnd}}"></div>
-        </div>
+        </template>
       </template>
     </div>
 
@@ -114,13 +116,17 @@
         _targetElementSelection: null,
         _targetPropertySelection: null,
         _connections: [], 
+        _positioned : false,
         ready: function() {
+          
+          // just to be able to test demo-reacreate and make sure elements are not being carried
+          // accross th-connectors
           this._elements = [];
-          console.log('~~~~~~ elements ready', this._elements);
-          this._updateFields();
+          //console.log('~~~~~~ elements ready', this._elements);
+          //this._processChildren();
 
           //here or domready
-          this.watchMutation();
+          //this.watchMutation();
         },
         domReady: function() {
           var self = this;
@@ -135,16 +141,16 @@
           self.colors = self.getThemeColors();
           */
          
-         console.log('~~~~~~ elements', this._elements);
+         //console.log('~~~~~~ elements', this._elements);
 
-          self._arrangeComponents();
+          //self._arrangeComponents();
 
-          self._updateFields();
+          self._processChildren();
 
 
-          //self.watchMutation();
+         self.watchMutation();
 
-         console.log('~~~~~~ elements after', this._elements);
+         //console.log('~~~~~~ elements after', this._elements);
 
 
           self.addEventListener('core-resize', function() {
@@ -205,7 +211,26 @@
 
 
         },
-        _updateFields: function() {
+        set elements(elements) {
+          console.log('------------------------------------------------ setter');
+          /*
+          elements.forEach(function(newElemenet) {
+            var alreadyInElements = self._elements.filter(function(item) {
+              //console.log('item.top',item.top);
+              return newElemenet.id && newElemenet.id===item.id;
+            });
+
+            console.log('alreadyInElements',alreadyInElements);
+            if(alreadyInElements.length>0 ) {
+              //return e.g. continue the loop
+              return;
+            }
+          });
+          */
+
+          this._elements = elements;
+        },
+        _processChildren: function() {
           var self = this;
           var boringTags = ['div','ul','li','span','th-editor','br'];
 
@@ -221,113 +246,137 @@
 
 
           var components = self.querySelectorAll('*'); 
-          console.log('components', components);
-          [].forEach.call(components, function(el, i) {
+          console.log('components', components, this._elements);
 
-              
-              // if element already processed, ignore...
-              var alreadyInElements = self._elements.filter(function(item) {
-                //console.log('item.top',item.top);
-                return el.id && el.id===item.id;
-              });
-
-              //console.log('alreadyInElements',alreadyInElements, alreadyInElements.top, el.getAttribute('_top'), el.getAttribute('_left'));
-              if(alreadyInElements.length>0) {
-                //return e.g. continue the loop
-                return;
-              }
-
-
-              var elName = el.tagName.toLowerCase();
-
-              // Set unique ID to each element
-              el.id = el.id || self.generateUniqueId(elName);
-
-              var index=boringTags.indexOf(elName);
-              if(index>-1) {
-                // or continue the loop
-                return;
-              }
-
-
-              var droppedTop = el.getAttribute('_top'),
-                  droppedLeft = el.getAttribute('_left');
-
-              if(droppedTop===null || droppedLeft===null) {
-                //then arange components:
-                
-                //if(!el.style.top || !el.style.left) {
-                
-                  /*
-
-                  prevWidth = parseInt(window.getComputedStyle(el).width.replace('px',''));
-                  if(i%2 == 0) {
-                    currentY += prevRowHeight + 40;
-                    prevRowHeight = 0;
-                    prevWidth = 0;
-
-                  }
-                  var height = parseInt(window.getComputedStyle(el).height.replace('px',''));
-
-                  console.log('prevWidth, height, currentY'+prevWidth, height, currentY);
-
-                  prevRowHeight = Math.max(prevRowHeight, height);
-                  //el.style.top = currentY+'px';
-                  //el.style.left = (prevWidth+ (prevWidth!==0 ? 150 : 0))+'px';
-                  //el.style.zIndex = wrappers.length-i;
-                  //
-
-                  */
-                 
-                  droppedTop = (Math.ceil(i/2) * 200) ;   ///currentY+'px';
-                  droppedLeft =  (i%2 * 200) ;//(prevWidth+ (prevWidth!==0 ? 150 : 0))+'px';
-
-
-                  
-
-               // }
-
-              }    
-
-              console.log('!!!!!!!!!!!!! droppedTop',i , droppedTop, droppedLeft);
-
-              //set element width and height to 100% so it takes the whole wrapper area.
-              el.style.width = '100%';
-              el.style.height = '100%';
-
-
-              /*
-              if(droppedTop && droppedLeft) {
-                  //wait until the wrapper is created...
-                  setTimeout(function() { 
-
-                  var wrapper = self.shadowRoot.querySelector('#wrapper-'+el.id);
-                  wrapper.style.top = droppedTop+'px';
-                  wrapper.style.left = droppedLeft+'px';
-                },10 );
-
-              }
-              */
-             
-             var elItem = {  element: el, 
-                                    id: el.id,
-                                    name: elName, 
-                                    outputReady: false,
-                                    inputReady: false,
-                                    top: droppedTop,
-                                    left: droppedLeft
-                                };
-
-                          console.log('elItem', elItem);
-
-
-              self._elements.push(elItem);
-              
-
-
+          //when there are child components not in the _elements
+          if(components.length> self._elements.length) {
 
           
-          });
+
+              [].forEach.call(components, function(el, i) {
+
+                  
+                  // if element already processed, ignore...
+                  var alreadyInElements = self._elements.filter(function(item) {
+                    //console.log('item.top',item.top);
+                    return el.id && el.id===item.id;
+                  });
+
+                  //console.log('alreadyInElements',alreadyInElements, alreadyInElements.top, el.getAttribute('_top'), el.getAttribute('_left'));
+                  if(alreadyInElements.length>0) {
+                    //return e.g. continue the loop
+                    return;
+                  }
+
+
+                  var elName = el.tagName.toLowerCase();
+
+                  // Set unique ID to each element
+                  el.id = el.id || self.generateUniqueId(elName);
+
+                  var index=boringTags.indexOf(elName);
+                  if(index>-1) {
+                    // or continue the loop
+                    return;
+                  }
+
+
+                  var droppedTop = el.getAttribute('_top'),
+                      droppedLeft = el.getAttribute('_left');
+
+                  if(droppedTop===null || droppedLeft===null) {
+                    //then arange components:
+                    
+                    //if(!el.style.top || !el.style.left) {
+                    
+                      /*
+
+                      prevWidth = parseInt(window.getComputedStyle(el).width.replace('px',''));
+                      if(i%2 == 0) {
+                        currentY += prevRowHeight + 40;
+                        prevRowHeight = 0;
+                        prevWidth = 0;
+
+                      }
+                      var height = parseInt(window.getComputedStyle(el).height.replace('px',''));
+
+                      console.log('prevWidth, height, currentY'+prevWidth, height, currentY);
+
+                      prevRowHeight = Math.max(prevRowHeight, height);
+                      //el.style.top = currentY+'px';
+                      //el.style.left = (prevWidth+ (prevWidth!==0 ? 150 : 0))+'px';
+                      //el.style.zIndex = wrappers.length-i;
+                      //
+
+                      */
+                     
+                      droppedTop = (Math.ceil(i/2) * 200) ;   ///currentY+'px';
+                      droppedLeft =  (i%2 * 200) ;//(prevWidth+ (prevWidth!==0 ? 150 : 0))+'px';
+
+
+                      
+
+                   // }
+
+                  }    
+
+                  //console.log('!!!!!!!!!!!!! droppedTop',i , droppedTop, droppedLeft);
+
+                  //set element width and height to 100% so it takes the whole wrapper area.
+                  el.style.width = '100%';
+                  el.style.height = '100%';
+
+
+                  /*
+                  if(droppedTop && droppedLeft) {
+                      //wait until the wrapper is created...
+                      setTimeout(function() { 
+
+                      var wrapper = self.shadowRoot.querySelector('#wrapper-'+el.id);
+                      wrapper.style.top = droppedTop+'px';
+                      wrapper.style.left = droppedLeft+'px';
+                    },10 );
+
+                  }
+                  */
+                 
+                 var elItem = {  element: el, 
+                                        id: el.id,
+                                        name: elName, 
+                                        outputReady: false,
+                                        inputReady: false,
+                                        top: droppedTop,
+                                        left: droppedLeft
+                                    };
+
+                              console.log('elItem', elItem);
+
+
+                  self._elements.push(elItem);
+                  
+
+
+
+              
+              });
+              this._positioned = true;
+
+          }
+          else if(components.length === self._elements.length) {
+            [].forEach.call(components, function(component, index) {
+              var elementInArray = self.findElById(component.id);
+              console.log('elementInArray',elementInArray);
+              if(elementInArray && elementInArray.element==null) {
+                elementInArray.element = component;
+              }
+            });
+           // setTimeout(function() {
+              this._positioned = true;
+              console.log('positioned true');
+           // }.bind(this),1000)
+
+          }
+
 
           // for (var i=0; i<self._elements.length; i++){
           //   self._elements[i].color = self.colors.accents[i];
@@ -342,10 +391,11 @@
          * for when th-connector is created with elements inside it
          * @return {null} 
          */
+/*
         _arrangeComponents: function() {
 
           var self = this;
-/*
+
           setTimeout(function() {
 
             var currentY = 0;
@@ -380,9 +430,30 @@
             
             });
           }, 100);
-*/
+
         },
 
+*/
+
+        setConnections: function(connections) {
+          this._connections = connections;
+
+                    console.log('SETconnections', this._connections, this._connections.length);
+
+          this._connections.forEach(function(connection) {
+            console.log(connection);
+            if(!connection.source.element) {
+              connection.source.element = this.queryChildrenById(connection.source.id);
+            }
+            if(!connection.target.element) {
+              connection.target.element = this.queryChildrenById(connection.target.id);
+            }
+            console.log(connection);
+            this._connectAttributes(connection.source, 'input', connection.target, 'output');
+          }.bind(this));
+
+          this._drawConnections();
+        },
         _displayFields: function(selector) {
           var self = this;
           var elSelector = selector.selection.textContent;
@@ -415,7 +486,7 @@
           })
         },
         */
-        _connectBubble: function(e, detail, selection){ 
+        _makeConnection: function(e, detail, selection){ 
           var self = this;
           //selection.style.border = "3px solid "+this.colors.accents[this.draggedEl.id];
           
@@ -424,7 +495,10 @@
           var source = self.findElById(self.draggedEl.classList[0])
           var target = self.findElById(selection.classList[0])
 
-          this._connectAttributes(source,'output',target,'input');
+          if(this._connectAttributes(source,'input',target,'output')) {
+  //           self._connections.push({source: source, target: target});
+
+          }
 
           self._drawConnections();
           
@@ -459,13 +533,16 @@
 
           if (source === target){ //if a bubble was dropped on itself
             alert('You cannot make a connection within the same element');
+            return false;
           } else { 
 
             // make the connection in the elements array
             //target.inputConnectedTo = source;  // not needed
               
-            var observer = new PathObserver(source.element, sourceField);     
+            var observer = new PathObserver(source.element, sourceField);  
+            console.log('observe created for ', source.element);   
                observer.open(function(newValue, oldValue) {
+              console.log('observe', newValue, oldValue);
                target.element[targetField] = newValue;
             });
 
@@ -474,11 +551,12 @@
             target.element[targetField] = source.element[sourceField];  
 
             //self.updateConnections();
-
-            //console.log(self.connections);
-            
+            //
             self._connections.push({source: source, target: target});
 
+            console.log('connection made....', self._connections);
+            
+            return true;
           }
 
         },
@@ -496,7 +574,7 @@
           //clear all paths. since it is not done offten it is fine to do it in a not optimized way
           self.$.svg.innerHTML = '';
 
-          
+          console.log('draw connections', self._connections, self._connections.length);
           for (var i = 0; i < self._connections.length; i++) {
 
 
@@ -624,7 +702,7 @@
 
               console.log('on mutationon mutationon mutationon mutationon mutationon mutation', this._elements);
 
-              this._updateFields();
+              this._processChildren();
 
               this.onMutation(this, change);
             }.bind(this);
@@ -977,10 +1055,13 @@
         findElById: function(id){
           var self = this;
           element = self._elements.filter(function(el){
-            return el.element.id === id;
+            return el.id === id;
           })[0];
 
           return element;
+        },
+        queryChildrenById: function(id) {
+          return this.querySelector('#'+id);
         },
         generateUniqueId: function(elName){
           var self = this;
