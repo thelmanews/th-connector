@@ -122,28 +122,12 @@
           // just to be able to test demo-reacreate and make sure elements are not being carried
           // accross th-connectors
           this._elements = [];
-          //console.log('~~~~~~ elements ready', this._elements);
-          //this._processChildren();
-
-          //here or domready
-          //this.watchMutation();
+          this._connections = [];
         },
         domReady: function() {
           var self = this;
 
-          //for old connection pannel
-          //self.showControls();
-          
-          // Set colors
-          
-          /*
-          self.defaultColor = '#555';
-          self.colors = self.getThemeColors();
-          */
          
-         //console.log('~~~~~~ elements', this._elements);
-
-          //self._arrangeComponents();
 
           self._processChildren();
 
@@ -231,6 +215,8 @@
           //when there are child components not in the _elements
           if(components.length> self._elements.length) {
 
+
+              console.log('components.length> self._elements.length',components.length, self._elements.length);
           
 
               [].forEach.call(components, function(el, i) {
@@ -267,28 +253,7 @@
                   if(droppedTop===null || droppedLeft===null) {
                     //then arange components:
                     
-                    //if(!el.style.top || !el.style.left) {
-                    
-                      /*
-
-                      prevWidth = parseInt(window.getComputedStyle(el).width.replace('px',''));
-                      if(i%2 == 0) {
-                        currentY += prevRowHeight + 40;
-                        prevRowHeight = 0;
-                        prevWidth = 0;
-
-                      }
-                      var height = parseInt(window.getComputedStyle(el).height.replace('px',''));
-
-                      console.log('prevWidth, height, currentY'+prevWidth, height, currentY);
-
-                      prevRowHeight = Math.max(prevRowHeight, height);
-                      //el.style.top = currentY+'px';
-                      //el.style.left = (prevWidth+ (prevWidth!==0 ? 150 : 0))+'px';
-                      //el.style.zIndex = wrappers.length-i;
-                      //
-
-                      */
+                   
                      
                       droppedTop = (Math.ceil(i/2) * 200) ;   ///currentY+'px';
                       droppedLeft =  (i%2 * 200) ;//(prevWidth+ (prevWidth!==0 ? 150 : 0))+'px';
@@ -343,6 +308,8 @@
 
           }
           else if(components.length === self._elements.length) {
+
+            console.log('components.length === self._elements.length');
             [].forEach.call(components, function(component, index) {
               var elementInArray = self.findElById(component.id);
               console.log('elementInArray',elementInArray);
@@ -670,6 +637,110 @@
           this.$.ctrl_collapse.toggle();
         } ,
         */
+   
+        /**
+         * Sacffold a new th-connector from state data. Usage: 
+         *  var newConnector = document.createElement('th-connector');
+         *  newConnector.scaffoldFromData(elements, connections)
+         *  where elements and connections are parsed json files coming form dumpStateDataAsString
+         * @param  {Object} elements    elements state data
+         * @param  {Object} connections connections
+         * @return {None}             
+         */
+        
+        scaffoldFromData: function(elements, connections) {
+
+          this._elements = elements;
+
+           this._elements.forEach(function(el) {
+              var alreadyExist = this.queryChildrenById(el.id);
+              console.log('alreadyExist', alreadyExist);
+              if(!alreadyExist) {
+                var domEl =  document.createElement(el.name);
+                domEl.id = el.id;
+                if(el.name==='th-table-data') {
+                  console.log('copy output ' , el.output)
+                  domEl.output = el.output;
+                }
+                else {
+                  Object.keys(domEl.publish).forEach(function(attr) {
+
+                    if(attr!=='input' && attr!=='output' && el[attr]) {
+                      console.log('copying ',attr);
+                      domEl[attr] = el[attr]; 
+                    }
+
+                               
+
+
+                  });
+                }
+                this.appendChild(domEl);
+              }
+
+            }.bind(this));
+
+           //delay to make sure position of elements are final
+           setTimeout(function() {
+
+            this.setConnections(connections);         
+
+           }.bind(this),500);
+
+
+          //newConnector._drawConnections()
+
+          //console.log('after ', newConnector);
+        },
+
+        dumpStateDataAsString: function() {
+          var self = this;
+          /*
+          var elements = _.cloneDeep(self._elements, function(value) {
+            console.log(value, _.isElement(value));
+            return !_.isElement(value) ? value : undefined
+          });
+          */
+          var toDumpEls = _.map(this._elements, function(el) {
+            var domObject = el.element;
+            var cloned = _.clone(el);           
+            //console.log(el, cloned, Object.keys(domObject.publish));
+            Object.keys(domObject.publish).forEach(function(attr) {
+             // if(el.element[attr]!=null) {
+                cloned[attr] = domObject[attr];
+             // }
+
+
+            });
+            return cloned;
+
+          });
+          console.log(this._elements, toDumpEls);
+
+          var retObj = {elements: toDumpEls, connections: this._connections};
+
+          var ret = JSON.stringify(retObj, this.removeDomObjects);
+
+          console.log(ret);
+          //var connectionsJSON = JSON.stringify(this._connections , this.removeDomObjects);
+
+           
+
+          return ret;
+
+        },  
+        
+        removeDomObjects: function(key, value) {
+          //console.log(key,value);
+
+
+          if(value instanceof HTMLElement) 
+            return undefined;
+          else
+            return value;
+
+        },              
+
         watchMutation: function() {
             var change = function() {
 
@@ -804,15 +875,7 @@
           }
 
         },
-        /*
-        listClicked: function(e, detail, selection) {
-          console.log(selection, e);
-          // better way to position them?
-          var x = e.offsetX + 200 + Math.round(Math.random()*400),
-              y = e.offsetY + 200 + Math.round(Math.random()*400);
-          this.addNewElToConnector(selection.classList[0], x, y);
-        },
-        */
+        
         dragOver: function(e, detail, selection){
           //selection.style.border = "3px solid "+this.colors.accents[this.draggedEl.id]; 
         if(this.draggedEl) {	
@@ -821,12 +884,7 @@
           e.preventDefault(); // allows drop event on this element
 
         },
-        /*
-        allowDrop: function(e,detail,selection){
-         
-          e.preventDefault(); // allows drop event on this element
-        },
-        */
+        
         dragLeave: function(e, detail, selection){
           //selection.style.border = "3px solid "+this.defaultColor;
           selection.style.borderLeftColor = this.defaultColor;

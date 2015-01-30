@@ -103,16 +103,22 @@
 
       var connector = document.querySelector('th-connector');
 
+
       var elementsJSON, connectionsJSON;
 
       setTimeout(function() {
+
+
         console.log('settimeout');
 
-        console.log('before ',connector);
+
+        var dumped = connector.dumpStateDataAsString();
+
+        console.log('DUMPED' + dumped);
+
         var elements = connector._elements;
         var connections = connector._connections;
 
-        console.log('elements', elements);
 
         function removeDomObjects(key, value) {
           //console.log(key,value);
@@ -124,18 +130,15 @@
 
         }
 
-        var elementsJSON = JSON.stringify(elements, removeDomObjects);
-
-        var connectionsJSON = JSON.stringify(connections , removeDomObjects);
+        
 
 
-        console.log('elements ',elementsJSON);
-        console.log('connections', connectionsJSON);
+        //console.log('elements ',elementsJSON);
+        //console.log('connections', connectionsJSON);
 
 
         connector.remove();
 
-          var newConnector = document.createElement('th-connector');
 
 
         console.log('###################### RECREATE ######################################');
@@ -143,38 +146,31 @@
 
         setTimeout(function() {
 
+
+          var newConnector = document.createElement('th-connector');
+
+          var data = JSON.parse(dumped);
+          
+          var elements = data.elements;
+
+          var connections = data.connections;
+
+
+
+
+   
+
+
+          newConnector.scaffoldFromData(elements, connections)
+
           document.body.appendChild(newConnector);
 
-          var elements = JSON.parse(elementsJSON);
-
-
-
-
-          elements.forEach(function(el) {
-            console.log(el);
-            var domEl =  document.createElement(el.name);
-            domEl.id = el.id;
-            newConnector.appendChild(domEl);
-
-          });
-
-
-
-       
-          //newConnector._connections = JSON.parse(connectionsJSON);
-  
-
-          newConnector.setConnections(JSON.parse(connectionsJSON));         
-
-          //newConnector._drawConnections()
-
-          console.log('after ', newConnector);
 
 
         },1000);
 
 
-      }, 5000);
+      }, 18000);
 
     });
 </script>
