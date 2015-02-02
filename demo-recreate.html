@@ -66,6 +66,10 @@
     top: 0px;
   }
 
+  #recreate {
+    margin-left: 30px;
+  }
+
 </style>
 
 <h1>Lenses Demo</h1>
@@ -79,6 +83,7 @@
     <a href="http://graphics.wsj.com/homeprice/" target="_blank"> WSJ Data on Home Prices</a>
   </p>
 </div>
+  <input type="button" id="recreate" value="recreate">
 
   <th-component-list></th-component-list>
 
@@ -98,43 +103,19 @@
 
 </body>
 <script>
-    window.addEventListener('polymer-ready', function(e) {
-      console.log('ready');
+    document.querySelector('#recreate').addEventListener('click', function (e) {
 
       var connector = document.querySelector('th-connector');
 
-
       var elementsJSON, connectionsJSON;
 
-      setTimeout(function() {
+      var dumped = connector.dumpStateDataAsString();
 
+      console.log('DUMPED' + dumped);
 
-        console.log('settimeout');
+      var elements = connector._elements;
+      var connections = connector._connections;
 
-
-        var dumped = connector.dumpStateDataAsString();
-
-        console.log('DUMPED' + dumped);
-
-        var elements = connector._elements;
-        var connections = connector._connections;
-
-
-        function removeDomObjects(key, value) {
-          //console.log(key,value);
-
-          if(value instanceof HTMLElement) 
-            return undefined;
-          else
-            return value;
-
-        }
-
-        
-
-
-        //console.log('elements ',elementsJSON);
-        //console.log('connections', connectionsJSON);
 
 
         connector.remove();
@@ -144,6 +125,7 @@
         console.log('###################### RECREATE ######################################');
 
 
+        //settimeout just for the visual effect.
         setTimeout(function() {
 
 
@@ -155,23 +137,16 @@
 
           var connections = data.connections;
 
-
-
-
-   
-
-
           newConnector.scaffoldFromData(elements, connections)
 
-          document.body.appendChild(newConnector);
+          document.body.appendChild(newConnector);      
 
 
 
         },1000);
 
 
-      }, 18000);
-
     });
+
 </script>
 </html>
