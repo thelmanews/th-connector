@@ -31,39 +31,41 @@
 
 
       <!-- Components and connector dots --> 
-      <template repeat="{{el, index in _elements}}">
-        <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" on-click="{{wrapperClicked}}" on-dragStart="{{dragStartWrapper}}" 
-        on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" 
-        style="top: {{el.top}}px; left: {{el.left}}px" draggable="true">
-          <label>{{el.name}}</label>
-          <!--<core-icon-button icon="clear" class="deleteEl {{el.element.id}}" on-click="{{_deleteElement}}"></core-icon-button> -->
-          <div  class="deleteEl" component_id="{{el.element.id}}" on-click="{{_deleteElement}}">X</div>
-           
-          <div class="connectors-in" >
-            <!-- Input -->
-            <template if="{{el.element.publish | checkForInputAttr}}">
-              <li class="{{el.element.id}} inputMarker" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{_connectBubble}}" draggable="true"></li>
-              
-            </template>
+      <template if="{{_positioned}}">
+        <template repeat="{{el, index in _elements}}">
+          <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" on-click="{{wrapperClicked}}" on-dragStart="{{dragStartWrapper}}" 
+          on-th-output-changed="{{showOutputAvailable}}" on-th-input-changed="{{showInputAvailable}}" 
+          style="top: {{el.top}}px; left: {{el.left}}px" draggable="true">
+            <label>{{el.name}}</label>
+            <!--<core-icon-button icon="clear" class="deleteEl {{el.element.id}}" on-click="{{_deleteElement}}"></core-icon-button> -->
+            <div  class="deleteEl" component_id="{{el.element.id}}" on-click="{{_deleteElement}}">X</div>
+             
+            <div class="connectors-in" >
+              <!-- Input -->
+              <template if="{{el.element.publish | checkForInputAttr}}">
+                <li class="{{el.element.id}} inputMarker" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{_makeConnection}}" draggable="true"></li>
+                
+              </template>
 
-            <!-- Output -->
+              <!-- Output -->
+            </div>
+            <content select="#{{el.id}}"></content>
+            <div class="connectors-out" >
+              <template if="{{el.element.publish | checkForOutputAttr}}">
+                <li id="{{index}}"  class="{{el.element.id}} outputMarker" on-dragStart="{{dragStartOutput}}" on-drag="{{drag}}" on-dragEnd="{{dragEnd}}"  draggable="true" style="border-left-color: {{el.outputReady ? el.color : defaultColor}}; "></li>
+              </template>
+              
+            </div>
+            <div class="final-result-buttons">
+              <template if="{{el.element.publish | checkForNoOutputAttr}}">
+                <li id="{{index}}"  class="{{el.element.id}} checkmark"  draggable="true" on-click="{{setAsFinalResult}}" title="Set as final result">
+                  <core-icon-button icon="check"></core-icon-button>
+                </li>
+              </template>
+            </div>
+            <div class="resize"  draggable="true"  on-drag="{{dragResize}}" on-dragEnd="{{dragResizeEnd}}"></div>
           </div>
-          <content select="#{{el.element.id}}"></content>
-          <div class="connectors-out" >
-            <template if="{{el.element.publish | checkForOutputAttr}}">
-              <li id="{{index}}"  class="{{el.element.id}} outputMarker" on-dragStart="{{dragStartOutput}}" on-drag="{{drag}}" on-dragEnd="{{dragEnd}}"  draggable="true" style="border-left-color: {{el.outputReady ? el.color : defaultColor}}; "></li>
-            </template>
-            
-          </div>
-          <div class="final-result-buttons">
-            <template if="{{el.element.publish | checkForNoOutputAttr}}">
-              <li id="{{index}}"  class="{{el.element.id}} checkmark"  draggable="true" on-click="{{setAsFinalResult}}" title="Set as final result">
-                <core-icon-button icon="check"></core-icon-button>
-              </li>
-            </template>
-          </div>
-          <div class="resize"  draggable="true"  on-drag="{{dragResize}}" on-dragEnd="{{dragResizeEnd}}"></div>
-        </div>
+        </template>
       </template>
     </div>
 
@@ -114,21 +116,24 @@
         _targetElementSelection: null,
         _targetPropertySelection: null,
         _connections: [], 
+        _positioned : false,
+        ready: function() {
+          
+          // just to be able to test demo-reacreate and make sure elements are not being carried
+          // accross th-connectors
+          this._elements = [];
+          this._connections = [];
+        },
         domReady: function() {
           var self = this;
 
-          //for old connection pannel
-          //self.showControls();
-          
-          // Set colors
-          self.defaultColor = '#555';
-          self.colors = self.getThemeColors();
+         
 
-          self._updateFields();
+          self._processChildren();
 
-          self._arrangeComponents();
 
-          self.watchMutation();
+         self.watchMutation();
+
 
 
           self.addEventListener('core-resize', function() {
@@ -189,80 +194,128 @@
 
 
         },
-        _updateFields: function() {
+
+        _processChildren: function() {
           var self = this;
           var boringTags = ['div','ul','li','span','th-editor','br'];
 
           //TODO don't recreate wrappers!!!!!
 
           //self._elements = [];
+          //
+
+            var currentY = 0;
+            var prevRowHeight = 0;
+            var prevWidth = 0;
+
 
           var components = self.querySelectorAll('*'); 
-          [].forEach.call(components, function(el, i) {
+
+          //when there are child components not in the _elements
+          if(components.length> self._elements.length) {
+
+
+
+              [].forEach.call(components, function(el, i) {
+
+                  
+                  // if element already processed, ignore...
+                  var alreadyInElements = self._elements.filter(function(item) {
+                    return el.id && el.id===item.id;
+                  });
+
+                  if(alreadyInElements.length>0) {
+                    //return e.g. continue the loop
+                    return;
+                  }
+
+
+                  var elName = el.tagName.toLowerCase();
+
+                  // Set unique ID to each element
+                  el.id = el.id || self.generateUniqueId(elName);
+
+                  var index=boringTags.indexOf(elName);
+                  if(index>-1) {
+                    // or continue the loop
+                    return;
+                  }
+
+
+                  var droppedTop = el.getAttribute('_top'),
+                      droppedLeft = el.getAttribute('_left');
+
+                  if(droppedTop===null || droppedLeft===null) {
+                    //then arange components:
+                    
+                   
+                     
+                      droppedTop = (Math.ceil(i/2) * 200) ;   ///currentY+'px';
+                      droppedLeft =  (i%2 * 200) ;//(prevWidth+ (prevWidth!==0 ? 150 : 0))+'px';
+
+
+                      
+
+                   // }
+
+                  }    
+
+
+                  //set element width and height to 100% so it takes the whole wrapper area.
+                  el.style.width = '100%';
+                  el.style.height = '100%';
+
+
+                  /*
+                  if(droppedTop && droppedLeft) {
+                      //wait until the wrapper is created...
+                      setTimeout(function() { 
+
+                      var wrapper = self.shadowRoot.querySelector('#wrapper-'+el.id);
+                      wrapper.style.top = droppedTop+'px';
+                      wrapper.style.left = droppedLeft+'px';
+                    },10 );
+
+                  }
+                  */
+                 
+                 var elItem = {  element: el, 
+                                        id: el.id,
+                                        name: elName, 
+                                        outputReady: false,
+                                        inputReady: false,
+                                        top: droppedTop,
+                                        left: droppedLeft
+                                    };
+
+
+
+                  self._elements.push(elItem);
+                  
+
+
 
               
-              // if element already processed, ignore...
-              var alreadyInElements = self._elements.filter(function(item) {
-                return el.id && el.id===item.id;
               });
-              if(alreadyInElements.length>0) {
-                //return e.g. continue the loop
-                return;
-              }
+              this._positioned = true;
 
-
-              var elName = el.tagName.toLowerCase();
-
-              // Set unique ID to each element
-              el.id = el.id || self.generateUniqueId(elName);
-
-              var index=boringTags.indexOf(elName);
-              if(index>-1) {
-                // or continue the loop
-                return;
-              }
-
-
-              var droppedTop = el.getAttribute('_top'),
-                  droppedLeft = el.getAttribute('_left');
-
-              //set element width and height to 100% so it takes the whole wrapper area.
-              el.style.width = '100%';
-              el.style.height = '100%';
-
-
-              /*
-              if(droppedTop && droppedLeft) {
-                  //wait until the wrapper is created...
-                  setTimeout(function() { 
-
-                  var wrapper = self.shadowRoot.querySelector('#wrapper-'+el.id);
-                  wrapper.style.top = droppedTop+'px';
-                  wrapper.style.left = droppedLeft+'px';
-                },10 );
-
-              }
-              */
-
-
-              self._elements.push({  element: el, 
-                                    id: el.id,
-                                    name: elName, 
-                                    outputReady: false,
-                                    inputReady: false,
-                                    top: droppedTop,
-                                    left: droppedLeft
-                                });
-              
-
-
-
-          
-          });
-
-          for (var i=0; i<self._elements.length; i++){
-            self._elements[i].color = self.colors.accents[i];
           }
+          else if(components.length === self._elements.length) {
+
+            [].forEach.call(components, function(component, index) {
+              var elementInArray = self.findElById(component.id);
+              if(elementInArray && elementInArray.element==null) {
+                elementInArray.element = component;
+              }
+            });
+            this._positioned = true;
+
+          }
+
+
+          // for (var i=0; i<self._elements.length; i++){
+          //   self._elements[i].color = self.colors.accents[i];
+          // }
 
 
 
@@ -273,6 +326,7 @@
          * for when th-connector is created with elements inside it
          * @return {null} 
          */
+/*
         _arrangeComponents: function() {
 
           var self = this;
@@ -280,8 +334,8 @@
           setTimeout(function() {
 
             var currentY = 0;
-            prevRowHeight = 0;
-            prevWidth = 0;
+            var prevRowHeight = 0;
+            var prevWidth = 0;
 
             var wrappers = self.shadowRoot.querySelectorAll('.wrapper');
             [].forEach.call(wrappers, function(el, i) {
@@ -314,6 +368,24 @@
 
         },
 
+*/
+
+        setConnections: function(connections) {
+          this._connections = connections;
+
+
+          this._connections.forEach(function(connection) {
+            if(!connection.source.element) {
+              connection.source.element = this.queryChildrenById(connection.source.id);
+            }
+            if(!connection.target.element) {
+              connection.target.element = this.queryChildrenById(connection.target.id);
+            }
+            this._connectAttributes(connection.source, 'output', connection.target, 'input');
+          }.bind(this));
+
+          this._drawConnections();
+        },
         _displayFields: function(selector) {
           var self = this;
           var elSelector = selector.selection.textContent;
@@ -346,16 +418,20 @@
           })
         },
         */
-        _connectBubble: function(e, detail, selection){ 
+        _makeConnection: function(e, detail, selection){ 
           var self = this;
           //selection.style.border = "3px solid "+this.colors.accents[this.draggedEl.id];
           
-          selection.style.borderLeftColor = this.colors.accents[this.draggedEl.id];
+          //selection.style.borderLeftColor = this.colors.accents[this.draggedEl.id];
 
-          var source = self.findElById(self.draggedEl.classList[0])
-          var target = self.findElById(selection.classList[0])
+          var source = self.findElById(self.draggedEl.classList[0]);
+          var target = self.findElById(selection.classList[0]);
 
-          this._connectAttributes(source,'output',target,'input');
+
+          this._connectAttributes(source,'output',target,'input')
+  //           self._connections.push({source: source, target: target});
+
+         // }
 
           self._drawConnections();
           
@@ -386,30 +462,32 @@
             self._connections.splice(connWithSameTargetIndex,1);
           }
 
-          console.log('connWithSameTargetIndex', connWithSameTargetIndex);
 
           if (source === target){ //if a bubble was dropped on itself
             alert('You cannot make a connection within the same element');
+            return false;
           } else { 
 
             // make the connection in the elements array
             //target.inputConnectedTo = source;  // not needed
               
-            var observer = new PathObserver(source.element, sourceField);     
-               observer.open(function(newValue, oldValue) {
+            var observer = new PathObserver(source.element, sourceField);  
+              
+            observer.open(function(newValue, oldValue) {
                target.element[targetField] = newValue;
             });
 
-            // to set the value when elements are connected
+
             
-            target.element[targetField] = source.element[sourceField];  
+            target.element[targetField] = source.element[sourceField]; 
 
             //self.updateConnections();
-
-            //console.log(self.connections);
             
+            //push the connections anyways because it will be deleted above.
             self._connections.push({source: source, target: target});
 
+            
+            return true;
           }
 
         },
@@ -427,15 +505,19 @@
           //clear all paths. since it is not done offten it is fine to do it in a not optimized way
           self.$.svg.innerHTML = '';
 
-          
           for (var i = 0; i < self._connections.length; i++) {
 
+
             var conn = self._connections[i];
-            var srcEl = conn.source.element;
-            var targetEl = conn.target.element;
+
+
+            var srcEl = conn.source.element || self.querySelector('#'+conn.source.id); //TODO do this in initialization method
+            var targetEl = conn.target.element || self.querySelector('#'+conn.target.id);
+
 
             var srcWrapper = self.shadowRoot.querySelector('#wrapper-'+srcEl.id);
             var targetWrapper = self.shadowRoot.querySelector('#wrapper-'+targetEl.id);
+
 
             // var srcRect = srcEl.getBoundingClientRect();
             // var targetRect = targetEl.getBoundingClientRect();
@@ -443,13 +525,17 @@
             var srcRect = srcWrapper.getBoundingClientRect();
             var targetRect = targetWrapper.getBoundingClientRect();
 
+
             var svgRect = self.$.svg.getBoundingClientRect();
+
 
 
             var startX = srcRect.right - svgRect.left + arrowOffsetX; //srcRect.left + srcRect.width + 30 - containerOffsetX;
             var startY = srcRect.top - svgRect.top + arrowOffsetY;
             var endX = targetRect.left  - svgRect.left - arrowOffsetX;
             var endY = targetRect.top  - svgRect.top + arrowOffsetY;
+
+
             self._addBezierPath(startX, startY, endX, endY , bezierCurveX);
             
           }        
@@ -499,7 +585,6 @@
           //var target = self.findElById(self.draggedEl.classList[0]);
           
           var targetId = self.draggedEl.classList[0];
-          console.log(targetId);
 
           // Check if it has a connection
           // 
@@ -526,7 +611,6 @@
             return conn.target.id!==target.id;
           });
 
-          console.log(self._connection);
           
           self._drawConnections();
         },
@@ -536,10 +620,107 @@
           this.$.ctrl_collapse.toggle();
         } ,
         */
+   
+        /**
+         * Sacffold a new th-connector from state data. Usage: 
+         *  var newConnector = document.createElement('th-connector');
+         *  newConnector.scaffoldFromData(elements, connections)
+         *  where elements and connections are parsed json files coming form dumpStateDataAsString
+         * @param  {Object} elements    elements state data
+         * @param  {Object} connections connections
+         * @return {None}             
+         */
+        
+        scaffoldFromData: function(elements, connections) {
+
+          this._elements = elements;
+
+           this._elements.forEach(function(el) {
+              var alreadyExist = this.queryChildrenById(el.id);
+              if(!alreadyExist) {
+                var domEl =  document.createElement(el.name);
+                domEl.id = el.id;
+                if(el.name==='th-table-data') {
+                  domEl.output = el.output;
+                }
+                else {
+                  Object.keys(domEl.publish).forEach(function(attr) {
+
+
+                    if(attr!=='input' && attr!=='output' && el[attr]) {
+                      domEl[attr] = el[attr]; 
+                    }
+
+                               
+
+
+                  });
+                }
+                this.appendChild(domEl);
+              }
+
+            }.bind(this));
+
+           //delay to make sure position of elements are final
+           setTimeout(function() {
+
+            this.setConnections(connections);         
+
+           }.bind(this),500);
+
+
+          //newConnector._drawConnections()
+
+        },
+
+        dumpStateDataAsString: function() {
+          var self = this;
+
+          var toDumpEls = _.map(this._elements, function(el) {
+            var domObject = el.element;
+            var cloned = _.clone(el);           
+            Object.keys(domObject.publish).forEach(function(attr) {
+
+              //ignore input attribute and output (except where the component is th-table-data)
+              if(attr==='chartData' || attr==='input' || (attr==='output' && el.name!=='th-table-data')) {
+                return;
+              }
+             
+                cloned[attr] = domObject[attr];
+
+
+            });
+            return cloned;
+
+          });
+
+          var retObj = {elements: toDumpEls, connections: this._connections};
+
+          var ret = JSON.stringify(retObj, this.removeDomObjects);
+
+          //var connectionsJSON = JSON.stringify(this._connections , this.removeDomObjects);
+
+           
+
+          return ret;
+
+        },  
+        
+        removeDomObjects: function(key, value) {
+
+
+          if(value instanceof HTMLElement) 
+            return undefined;
+          else
+            return value;
+
+        },              
+
         watchMutation: function() {
             var change = function() {
 
-              this._updateFields();
+
+              this._processChildren();
 
               this.onMutation(this, change);
             }.bind(this);
@@ -584,7 +765,6 @@
             return !(conn.source.id===elId || conn.target.id === elId)
              
           });
-          console.log('goods',goodConnections);
 
           self._connections = goodConnections;
 
@@ -594,13 +774,13 @@
         },
 
         checkForInputAttr: function(value){
-          return Object.keys(value).indexOf("input") > -1 ? true : false;
+          return value && Object.keys(value).indexOf("input") > -1 ? true : false;
         },
         checkForOutputAttr: function(value){
-          return Object.keys(value).indexOf("output") > -1 ? true : false;
+          return value && Object.keys(value).indexOf("output") > -1 ? true : false;
         },
         checkForNoOutputAttr: function(value){
-          return Object.keys(value).indexOf("output") > -1 ? false : true;
+          return value && Object.keys(value).indexOf("output") > -1 ? false : true;
         },
         wrapperClicked: function(e, detail, selection) {
           var wrapperEl = selection;
@@ -670,28 +850,16 @@
           }
 
         },
-
-        listClicked: function(e, detail, selection) {
-          console.log(selection, e);
-          // better way to position them?
-          var x = e.offsetX + 200 + Math.round(Math.random()*400),
-              y = e.offsetY + 200 + Math.round(Math.random()*400);
-          this.addNewElToConnector(selection.classList[0], x, y);
-        },
+        
         dragOver: function(e, detail, selection){
           //selection.style.border = "3px solid "+this.colors.accents[this.draggedEl.id]; 
         if(this.draggedEl) {	
- 	          selection.style.borderLeftColor = this.colors.accents[this.draggedEl.id];
+ 	          //selection.style.borderLeftColor = this.colors.accents[this.draggedEl.id];
          }
           e.preventDefault(); // allows drop event on this element
 
         },
-        /*
-        allowDrop: function(e,detail,selection){
-         
-          e.preventDefault(); // allows drop event on this element
-        },
-        */
+        
         dragLeave: function(e, detail, selection){
           //selection.style.border = "3px solid "+this.defaultColor;
           selection.style.borderLeftColor = this.defaultColor;
@@ -700,7 +868,6 @@
         droppedInContainer: function(e, detail, selection){
           var self = this;
 
-          console.log('dropeed in container');
           // for wrapper move. is it better to use dataTransfer instead of self.draggedEl for anchor as well? (below)
           var dataTransfer = e.dataTransfer.getData('text/plain');
 
@@ -720,10 +887,29 @@
             var wrapper = self.shadowRoot.querySelector('#'+dataSeg[2]);
             
             
-            wrapper.style.left = (e.clientX + parseInt(dataSeg[0],10)) + 'px';
-            wrapper.style.top = (e.clientY + parseInt(dataSeg[1],10)) + 'px';
+            // wrapper.style.left = (e.clientX + parseInt(dataSeg[0],10)) + 'px';
+            // wrapper.style.top = (e.clientY + parseInt(dataSeg[1],10)) + 'px';
+            
+            var left = (e.clientX + parseInt(dataSeg[0],10)),// + 'px',
+                top = (e.clientY + parseInt(dataSeg[1],10));// + 'px';
 
-            self._drawConnections();
+
+            var elementId = wrapper.id.substring(8, wrapper.id.length);
+
+            var element = self.findElById(elementId);
+
+            //wrapper.style.left = left;
+            //wrapper.style.top = top;
+
+            element.top = top;
+            element.left = left;
+
+
+            setTimeout(function() {
+              self._drawConnections();
+
+            },50)
+
 
             e.preventDefault(); 
             return false; 
@@ -791,7 +977,6 @@
 
           self._drawConnections();
 
-          //console.log( wrapper.style);
           e.stopPropagation();
           e.preventDefault();
 
@@ -877,10 +1062,13 @@
         findElById: function(id){
           var self = this;
           element = self._elements.filter(function(el){
-            return el.element.id === id;
+            return el.id === id;
           })[0];
 
           return element;
+        },
+        queryChildrenById: function(id) {
+          return this.querySelector('#'+id);
         },
         generateUniqueId: function(elName){
           var self = this;
