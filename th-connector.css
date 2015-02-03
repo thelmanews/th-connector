@@ -130,8 +130,7 @@
       }
       
       ::content > *:not(ul) { /* selects the elements */
-        min-width: 20px;
-        min-height: 20px;
+
         /*border: 1px solid #DDD;*/
         margin: 2px;
         display: inline-block;

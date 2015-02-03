@@ -134,7 +134,6 @@
 
          self.watchMutation();
 
-         //console.log('~~~~~~ elements after', this._elements);
 
 
           self.addEventListener('core-resize', function() {
@@ -216,19 +215,15 @@
           if(components.length> self._elements.length) {
 
 
-              console.log('components.length> self._elements.length',components.length, self._elements.length);
-          
 
               [].forEach.call(components, function(el, i) {
 
                   
                   // if element already processed, ignore...
                   var alreadyInElements = self._elements.filter(function(item) {
-                    //console.log('item.top',item.top);
                     return el.id && el.id===item.id;
                   });
 
-                  //console.log('alreadyInElements',alreadyInElements, alreadyInElements.top, el.getAttribute('_top'), el.getAttribute('_left'));
                   if(alreadyInElements.length>0) {
                     //return e.g. continue the loop
                     return;
@@ -265,7 +260,6 @@
 
                   }    
 
-                  //console.log('!!!!!!!!!!!!! droppedTop',i , droppedTop, droppedLeft);
 
                   //set element width and height to 100% so it takes the whole wrapper area.
                   el.style.width = '100%';
@@ -294,7 +288,6 @@
                                         left: droppedLeft
                                     };
 
-                              console.log('elItem', elItem);
 
 
                   self._elements.push(elItem);
@@ -309,10 +302,8 @@
           }
           else if(components.length === self._elements.length) {
 
-            console.log('components.length === self._elements.length');
             [].forEach.call(components, function(component, index) {
               var elementInArray = self.findElById(component.id);
-              console.log('elementInArray',elementInArray);
               if(elementInArray && elementInArray.element==null) {
                 elementInArray.element = component;
               }
@@ -382,17 +373,14 @@
         setConnections: function(connections) {
           this._connections = connections;
 
-                    console.log('SETconnections', this._connections, this._connections.length);
 
           this._connections.forEach(function(connection) {
-            console.log(connection);
             if(!connection.source.element) {
               connection.source.element = this.queryChildrenById(connection.source.id);
             }
             if(!connection.target.element) {
               connection.target.element = this.queryChildrenById(connection.target.id);
             }
-            console.log(connection);
             this._connectAttributes(connection.source, 'output', connection.target, 'input');
           }.bind(this));
 
@@ -439,7 +427,6 @@
           var source = self.findElById(self.draggedEl.classList[0]);
           var target = self.findElById(selection.classList[0]);
 
-          console.log('find by id results ', source, target, self.draggedEl.classList[0], selection.classList[0], self._elements );
 
           this._connectAttributes(source,'output',target,'input')
   //           self._connections.push({source: source, target: target});
@@ -475,7 +462,6 @@
             self._connections.splice(connWithSameTargetIndex,1);
           }
 
-          console.log('connWithSameTargetIndex', connWithSameTargetIndex);
 
           if (source === target){ //if a bubble was dropped on itself
             alert('You cannot make a connection within the same element');
@@ -488,7 +474,6 @@
             var observer = new PathObserver(source.element, sourceField);  
               
             observer.open(function(newValue, oldValue) {
-              console.log('observe', newValue, oldValue);
                target.element[targetField] = newValue;
             });
 
@@ -501,7 +486,6 @@
             //push the connections anyways because it will be deleted above.
             self._connections.push({source: source, target: target});
 
-            console.log('connection made....', self._connections);
             
             return true;
           }
@@ -526,7 +510,6 @@
 
             var conn = self._connections[i];
 
-            //console.log(conn.source.id, self.querySelector('#'+conn.source.id))
 
             var srcEl = conn.source.element || self.querySelector('#'+conn.source.id); //TODO do this in initialization method
             var targetEl = conn.target.element || self.querySelector('#'+conn.target.id);
@@ -654,19 +637,17 @@
 
            this._elements.forEach(function(el) {
               var alreadyExist = this.queryChildrenById(el.id);
-              console.log('alreadyExist', alreadyExist);
               if(!alreadyExist) {
                 var domEl =  document.createElement(el.name);
                 domEl.id = el.id;
                 if(el.name==='th-table-data') {
-                  console.log('copy output ' , el.output)
                   domEl.output = el.output;
                 }
                 else {
                   Object.keys(domEl.publish).forEach(function(attr) {
 
+
                     if(attr!=='input' && attr!=='output' && el[attr]) {
-                      console.log('copying ',attr);
                       domEl[attr] = el[attr]; 
                     }
 
@@ -690,38 +671,33 @@
 
           //newConnector._drawConnections()
 
-          //console.log('after ', newConnector);
         },
 
         dumpStateDataAsString: function() {
           var self = this;
-          /*
-          var elements = _.cloneDeep(self._elements, function(value) {
-            console.log(value, _.isElement(value));
-            return !_.isElement(value) ? value : undefined
-          });
-          */
+
           var toDumpEls = _.map(this._elements, function(el) {
             var domObject = el.element;
             var cloned = _.clone(el);           
-            //console.log(el, cloned, Object.keys(domObject.publish));
             Object.keys(domObject.publish).forEach(function(attr) {
-             // if(el.element[attr]!=null) {
+
+              //ignore input attribute and output (except where the component is th-table-data)
+              if(attr==='chartData' || attr==='input' || (attr==='output' && el.name!=='th-table-data')) {
+                return;
+              }
+             
                 cloned[attr] = domObject[attr];
-             // }
 
 
             });
             return cloned;
 
           });
-          console.log(this._elements, toDumpEls);
 
           var retObj = {elements: toDumpEls, connections: this._connections};
 
           var ret = JSON.stringify(retObj, this.removeDomObjects);
 
-          console.log(ret);
           //var connectionsJSON = JSON.stringify(this._connections , this.removeDomObjects);
 
            
@@ -731,7 +707,6 @@
         },  
         
         removeDomObjects: function(key, value) {
-          //console.log(key,value);
 
 
           if(value instanceof HTMLElement) 
@@ -1002,7 +977,6 @@
 
           self._drawConnections();
 
-          //console.log( wrapper.style);
           e.stopPropagation();
           e.preventDefault();
 
