@@ -7,6 +7,8 @@
 <link rel="import" href="../core-item/core-item.html">
 <link rel="import" href="../th-theme/th-theme.html">
 
+<link rel="import" href="../lenses-theme/lenses-theme.html">
+
  <link rel="import" href="../th-data-table/th-data-table.html">
   
 <!-- <link rel="import" href="../th-data-table/th-data-table.html">
@@ -15,12 +17,17 @@
   <core-style id="core_style" ref="theme"></theme>
   <template>
     <link rel="stylesheet" href="th-connector.css"/>
- 
+<!--     <lenses-theme id="pageTheme" theme="connector"></lenses-theme>
+    <core-style ref="lenses"></core-style>
+ --> 
     <div class="connectors">
     </div>
 
+    <core-icon-button id="showDataBtn" class="active" icon="view-module" on-click="{{showDataBtn}}" alt="show component data"></core-icon-button>
+    <th-component-list id="component_list"></th-component-list>
+
     <div id="input_preview" class="data-preview">
-      <template if="{{_selElement.input && _selElement.input.length>0}}">
+      <template if="{{_showDataTable && _selElement.input && _selElement.input.length>0}}">
         <label>selected component input</label>
         <th-data-table id="input_table" input="{{_selElement.input}}" class="table"  minimal="true"></th-data-table>
       </template>
@@ -70,7 +77,7 @@
     </div>
 
     <div id="output_preview" class="data-preview">
-      <template if="{{_selElement.output && _selElement.output.length>0}}">
+      <template if="{{_showDataTable && _selElement.output && _selElement.output.length>0}}">
         <label>selected component output</label>
         <th-data-table id="output_table" input="{{_selElement.output}}" class="table"  minimal="true"></th-data-table>
       </template>
@@ -117,6 +124,7 @@
         _targetPropertySelection: null,
         _connections: [], 
         _positioned : false,
+        _showDataTable: true,
         ready: function() {
           
           // just to be able to test demo-reacreate and make sure elements are not being carried
@@ -1117,6 +1125,16 @@
 
 
 
+        },
+
+        showDataBtn: function() {
+            this._showDataTable = !this._showDataTable;
+            this.$.showDataBtn.classList.toggle('active');
+            [].forEach.call(this.shadowRoot.querySelectorAll('.data-preview'), function(el) {
+              console.log(el.style.maxHeight,el.style.opacity);
+              el.style.maxHeight = el.style.maxHeight=='0px' ? '100px' : '0px';
+              //el.style.opacity = el.style.opacity==0 ? 1 : 0;
+            });
         }
       });
 
