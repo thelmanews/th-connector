@@ -16,6 +16,27 @@
         top: 25px;
         left: 5px;
       }
+
+      #component_list {
+        position: absolute;
+        top: 50px;
+        right: 10px;
+        z-index: 200;
+      }
+
+      #showDataBtn {
+        position: fixed;
+        top: 5px;
+        right: 5px;
+        z-index: 300;
+      }
+
+      core-icon-button.active {
+        background-color: #EEE;
+        border: 1px solid #888;
+
+      }
+
       .anchor {
         width: 5px;
         height: 5px;
@@ -294,6 +315,8 @@
         width: 100%;
         background-color: rgba(255,255,255,0.9);
         border: 1px solid #AAA;
+        transition: height 0.5s;
+        transition: max-height 0.5s;
       }
 
       .data-preview label {
