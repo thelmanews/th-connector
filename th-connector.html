@@ -1134,11 +1134,17 @@
 
                newEl = document.createElement(newElName);
 
-               newEl.setAttribute('_top', top);
-               newEl.setAttribute('_left', left);
+               self.$.component_list.checkAndImport(newEl, function() {
+
+                  newEl.setAttribute('_top', top);
+                  newEl.setAttribute('_left', left);
 
               
-              self.appendChild(newEl);
+                  self.appendChild(newEl);
+
+
+               });
+
              //self.innerHTML = innerHTML;
 
 
