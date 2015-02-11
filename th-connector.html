@@ -446,6 +446,8 @@
          // }
 
           self._drawConnections();
+
+          e.stopPropagation();
           
         },
         
@@ -606,6 +608,9 @@
           //var target = self.findElById(self.draggedEl.classList[0]);
           
           var targetId = self.draggedEl.classList[0];
+
+          //to reset.
+          self.draggedEl == null;
 
           // Check if it has a connection
           // 
@@ -939,7 +944,7 @@
           }
           
           //input marker dragged (disconnect)
-          if(self.draggedEl && self.draggedEl.classList.contains("arrow")){
+          else if(self.draggedEl && self.draggedEl.classList.contains("arrow")){
             self._deleteConnectionFromBubble(e, detail, selection);
           }else if (self.draggedEl && self.draggedEl.tagName != 'LI'){
             // It's probably a component that got drag/dropped. Do something here.
