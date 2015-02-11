@@ -50,7 +50,9 @@
             <div class="connectors-in" >
               <!-- Input -->
               <template if="{{el.element.publish | checkForInputAttr}}">
-                <li class="{{el.element.id}} inputMarker" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{_makeConnection}}" draggable="true"></li>
+                <div class="{{el.element.id}} arrow" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{_makeConnection}}" draggable="true">
+                  <div class="inputMarker"></div>
+                </div>
                 
               </template>
 
@@ -59,15 +61,17 @@
             <content select="#{{el.id}}"></content>
             <div class="connectors-out" >
               <template if="{{el.element.publish | checkForOutputAttr}}">
-                <li id="{{index}}"  class="{{el.element.id}} outputMarker" on-dragStart="{{dragStartOutput}}" on-drag="{{drag}}" on-dragEnd="{{dragEnd}}"  draggable="true" style="border-left-color: {{el.outputReady ? el.color : defaultColor}}; "></li>
+                <div id="{{index}}"  class="{{el.element.id}} arrow" on-dragStart="{{dragStartOutput}}" on-drag="{{drag}}" on-dragEnd="{{dragEnd}}"  draggable="true" style="border-left-color: {{el.outputReady ? el.color : defaultColor}}; ">
+                  <div class="outputMarker"></div>
+                </div>
               </template>
               
             </div>
             <div class="final-result-buttons">
               <template if="{{el.element.publish | checkForNoOutputAttr}}">
-                <li id="{{index}}"  class="{{el.element.id}} checkmark"  draggable="true" on-click="{{setAsFinalResult}}" title="Set as final result">
+                <div id="{{index}}"  class="{{el.element.id}} checkmark"  draggable="true" on-click="{{setAsFinalResult}}" title="Set as final result">
                   <core-icon-button icon="check"></core-icon-button>
-                </li>
+                </div>
               </template>
             </div>
             <div class="resize"  draggable="true"  on-drag="{{dragResize}}" on-dragEnd="{{dragResizeEnd}}"></div>
@@ -505,8 +509,8 @@
           var self = this;
 
 
-          var arrowOffsetY = 12;
-          var arrowOffsetX = 5;
+          var arrowOffsetY = 7;
+          var arrowOffsetX = 7;
           var bezierCurveX = 70;  // the larger the value the smoother the curve
 
 
@@ -569,8 +573,17 @@
 
         _createBezierPath: function(startX, startY, endX, endY, handleOffsetX) {
 
+            // make handleOffsetX larger when source element is on the right side of target
             if(startX > endX) {
               handleOffsetX *= 2;
+            }
+            var distance = Math.sqrt(Math.pow(endX-startX, 2) + Math.pow(endY-startY,2));
+            // decrease handleOffsetX when too close...
+            if(distance<100) {
+               handleOffsetX /= 2;
+            }
+            if(distance<50) {
+               handleOffsetX /= 4;
             }
             var path = "M"+parseInt(startX)+","+parseInt(startY)+
                        " C"+parseInt(startX + handleOffsetX)+","+parseInt(startY)+
@@ -793,10 +806,10 @@
         wrapperClicked: function(e, detail, selection) {
           var wrapperEl = selection;
           if(this._selWrapper) {
-            this._selWrapper.classList.remove('sel-element');
+            this._selWrapper.classList.remove('selected-element');
           }
           this._selWrapper = wrapperEl;
-          this._selWrapper.classList.add('sel-element');
+          this._selWrapper.classList.add('selected-element');
 
           var elementId = wrapperEl.id;
           elementId = elementId.substring(8, elementId.length);
@@ -926,7 +939,7 @@
           }
           
           //input marker dragged (disconnect)
-          if(self.draggedEl && self.draggedEl.classList.contains("inputMarker")){
+          if(self.draggedEl && self.draggedEl.classList.contains("arrow")){
             self._deleteConnectionFromBubble(e, detail, selection);
           }else if (self.draggedEl && self.draggedEl.tagName != 'LI'){
             // It's probably a component that got drag/dropped. Do something here.
