@@ -9,7 +9,7 @@
 
 <link rel="import" href="../lenses-theme/lenses-theme.html">
 
- <link rel="import" href="../th-data-table/th-data-table.html">
+<link rel="import" href="../th-data-table/th-data-table.html">
   
 <!-- <link rel="import" href="../th-data-table/th-data-table.html">
  -->
@@ -49,12 +49,15 @@
              
             <div class="connectors-in" >
               <!-- Input -->
-              <template if="{{el.element.publish | checkForInputAttr}}">
-                <div class="{{el.element.id}} arrow" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{_makeConnection}}" draggable="true">
-                  <div class="inputMarker"></div>
-                </div>
-                
-              </template>
+              
+              <ul>
+                <template repeat="{{ins in el.element.publish | checkForInputAttr}}">
+                     
+                    <li class="{{el.element.id}}-{{ins}} arrow" on-dragover="{{dragOver}}" on-dragStart="{{dragStart}}" on-dragleave="{{dragLeave}}" on-drop="{{_makeConnection}}" draggable="true">
+                      <div class="inputMarker"></div>
+                    </li>
+                </template>
+              </ul>
 
               <!-- Output -->
             </div>
@@ -800,7 +803,12 @@
         },
 
         checkForInputAttr: function(value){
-          return value && Object.keys(value).indexOf("input") > -1 ? true : false;
+          var attrs = Object.keys(value).filter(function(item) {
+            return item.indexOf("input") > -1;
+
+          })
+          return attrs;
+          //return value && Object.keys(value).indexOf("input") > -1 ? true : false;
         },
         checkForOutputAttr: function(value){
           return value && Object.keys(value).indexOf("output") > -1 ? true : false;
