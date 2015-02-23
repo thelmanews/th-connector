@@ -435,18 +435,21 @@
         */
         _makeConnection: function(e, detail, selection){ 
           var self = this;
-          //selection.style.border = "3px solid "+this.colors.accents[this.draggedEl.id];
-          
-          //selection.style.borderLeftColor = this.colors.accents[this.draggedEl.id];
 
-          var source = self.findElById(self.draggedEl.classList[0]);
-          var target = self.findElById(selection.classList[0]);
+          var className = selection.classList[0],
+              targetElementId = className.substring(0, className.lastIndexOf('-') ),   
+              targetField = className.substring(className.lastIndexOf('-') + 1, className.length ),      
+              source = self.findElById(self.draggedEl.classList[0]),
+              target = self.findElById(targetElementId);
+
+          console.log(selection.classList[0],targetElementId,targetField,target);
 
 
-          this._connectAttributes(source,'output',target,'input')
-  //           self._connections.push({source: source, target: target});
+          this._connectAttributes(source, 'output', target, targetField);
 
-         // }
+        // self._connections.push({source: source, target: target});
+
+        // }
 
           self._drawConnections();
 
@@ -469,7 +472,8 @@
 
           //find the index of connection which has the same target
           var connWithSameTargetIndex = self._connections.reduce(function(value, conn, index) {
-              if (conn.target.id===target.id) {
+              console.log(conn);
+              if (conn.target.id===target.id && conn.target.field===targetField) {
                 return index;
               }
 
@@ -494,14 +498,19 @@
                target.element[targetField] = newValue;
             });
 
+            var srcClone = {id: source.id, name: source.name, element: source.element};
+            var targetClone = {id: target.id, name: target.name, element: target.element};
+
 
             
             target.element[targetField] = source.element[sourceField]; 
 
+            targetClone.field = targetField;
+
             //self.updateConnections();
             
             //push the connections anyways because it will be deleted above.
-            self._connections.push({source: source, target: target});
+            self._connections.push({source: srcClone, target: targetClone});
 
             
             return true;
@@ -527,6 +536,8 @@
 
             var conn = self._connections[i];
 
+            console.log('connection ', conn);
+
 
             var srcEl = conn.source.element || self.querySelector('#'+conn.source.id); //TODO do this in initialization method
             var targetEl = conn.target.element || self.querySelector('#'+conn.target.id);
@@ -545,12 +556,12 @@
 
             var svgRect = self.$.svg.getBoundingClientRect();
 
-
+            var otherInputOffset = (conn.target.field==='input') ? 0 : 16;
 
             var startX = srcRect.right - svgRect.left + arrowOffsetX; //srcRect.left + srcRect.width + 30 - containerOffsetX;
             var startY = srcRect.top - svgRect.top + arrowOffsetY;
             var endX = targetRect.left  - svgRect.left - arrowOffsetX;
-            var endY = targetRect.top  - svgRect.top + arrowOffsetY;
+            var endY = targetRect.top  - svgRect.top + arrowOffsetY + otherInputOffset;
 
 
             self._addBezierPath(startX, startY, endX, endY , bezierCurveX);
@@ -607,10 +618,10 @@
         _deleteConnectionFromBubble: function(e, detail, selection){
           var self = this;
           
-          // Select the element being dragged from elements array          
-          //var target = self.findElById(self.draggedEl.classList[0]);
+          var className = self.draggedEl.classList[0],
+              targetElementId = className.substring(0, className.lastIndexOf('-') ),   
+              targetField = className.substring(className.lastIndexOf('-') + 1, className.length );      
           
-          var targetId = self.draggedEl.classList[0];
 
           //to reset.
           self.draggedEl == null;
@@ -618,7 +629,7 @@
           // Check if it has a connection
           // 
           var connection = self._connections.filter(function(conn) {
-            return conn.target.id===targetId;
+            return conn.target.id===targetElementId && conn.target.field===targetField;
           });
 
 
@@ -629,16 +640,18 @@
         _deleteConnection: function(target){
           var self = this;
           if (confirm('Do you want to remove this connection?')) {
-              target.input = null; // TODO: switch to called clearData on the element
-              //targetEl.inputConnectedTo = false;
+              console.log(target);
+              target[target.field] = null; 
+
+              self._connections = self._connections.filter(function(conn) {
+                console.log(conn);
+                //assuming a component can accept incoming connection from only one
+                //component we can only check for target
+                return conn.target.id!==target.id || conn.target.field!==target.field;
+              });
+
           } 
-          //self.updateConnections();
           
-          self._connections = self._connections.filter(function(conn) {
-            //assuming a component can accept incoming connection from only one
-            //component we can only check for target
-            return conn.target.id!==target.id;
-          });
 
           
           self._drawConnections();
@@ -950,9 +963,8 @@
 
 
           }
-          
-          //input marker dragged (disconnect)
           else if(self.draggedEl && self.draggedEl.classList.contains("arrow")){
+            //input marker dragged (disconnect)
             self._deleteConnectionFromBubble(e, detail, selection);
           }else if (self.draggedEl && self.draggedEl.tagName != 'LI'){
             // It's probably a component that got drag/dropped. Do something here.
